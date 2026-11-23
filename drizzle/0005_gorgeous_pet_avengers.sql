@@ -1,0 +1,1 @@
+ALTER TABLE `affiliate_clicks` ADD `is_self` boolean DEFAULT false NOT NULL;

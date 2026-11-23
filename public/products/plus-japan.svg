@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="460" viewBox="0 0 640 460" fill="none">
+  <title>plus 日区成品号</title>
+  <defs>
+    <linearGradient id="surface" x1="101" y1="55" x2="531" y2="390" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FAFBFC"/><stop offset=".28" stop-color="#F1F0F5"/><stop offset=".56" stop-color="#E3E4ED"/><stop offset=".8" stop-color="#F6F6FA"/><stop offset="1" stop-color="#D9DDE6"/>
+    </linearGradient>
+    <linearGradient id="rim" x1="120" y1="58" x2="492" y2="395" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFFFFF"/><stop offset=".29" stop-color="#E4E2ED"/><stop offset=".58" stop-color="#8D91A9"/><stop offset=".8" stop-color="#FFFFFF"/><stop offset="1" stop-color="#A4A8BC"/>
+    </linearGradient>
+    <radialGradient id="violet" cx="0" cy="0" r="1" gradientTransform="translate(476 199) rotate(160) scale(225 204)" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#BDB5F4" stop-opacity=".8"/><stop offset="1" stop-color="#EAE7FB" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="mint" cx="0" cy="0" r="1" gradientTransform="translate(539 285) rotate(-130) scale(180 125)" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#C5F4EB" stop-opacity=".95"/><stop offset="1" stop-color="#DCFAF5" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="beam" x1="250" y1="90" x2="510" y2="300" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFFFFF" stop-opacity="0"/><stop offset=".43" stop-color="#FFFFFF" stop-opacity="0"/><stop offset=".54" stop-color="#FFFFFF" stop-opacity=".7"/><stop offset=".68" stop-color="#FFFFFF" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="chrome" x1="376" y1="140" x2="516" y2="283" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F8F6FF"/><stop offset=".2" stop-color="#E3DFF3"/><stop offset=".35" stop-color="#ACA3CF"/><stop offset=".48" stop-color="#FAFBFF"/><stop offset=".56" stop-color="#CEDCF1"/><stop offset=".73" stop-color="#8C87B0"/><stop offset="1" stop-color="#E0DCEE"/>
+    </linearGradient>
+    <linearGradient id="depth" x1="385" y1="135" x2="521" y2="289" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#D1CCDF"/><stop offset=".35" stop-color="#79738E"/><stop offset=".6" stop-color="#B5ABC9"/><stop offset="1" stop-color="#605B75"/>
+    </linearGradient>
+    <linearGradient id="ink" x1="104" y1="154" x2="280" y2="267" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#252631"/><stop offset=".6" stop-color="#32313F"/><stop offset="1" stop-color="#625D77"/>
+    </linearGradient>
+    <filter id="emboss" x="-40%" y="-40%" width="190%" height="200%">
+      <feDropShadow dx="3" dy="12" stdDeviation="9" flood-color="#554878" flood-opacity=".25"/>
+    </filter>
+    <filter id="grain" x="0" y="0" width="100%" height="100%">
+      <feTurbulence type="fractalNoise" baseFrequency=".7" numOctaves="3" stitchTiles="stitch"/>
+      <feColorMatrix type="saturate" values="0"/>
+      <feComposite in2="SourceGraphic" operator="in"/>
+    </filter>
+    <clipPath id="face"><rect x="61" y="65" width="518" height="326" rx="25"/></clipPath>
+    <path id="plus" d="M428 139H456Q465 139 465 148V182H499Q508 182 508 191V219Q508 228 499 228H465V262Q465 271 456 271H428Q419 271 419 262V228H385Q376 228 376 219V191Q376 182 385 182H419V148Q419 139 428 139Z"/>
+  </defs>
+  <g transform="rotate(-7 320 230)">
+    <g>
+      <rect x="61" y="69" width="518" height="326" rx="25" fill="#B0B1C1"/>
+      <rect x="61" y="65" width="518" height="326" rx="25" fill="url(#surface)"/>
+    </g>
+    <g clip-path="url(#face)">
+      <rect x="61" y="65" width="518" height="326" fill="url(#violet)"/>
+      <rect x="61" y="65" width="518" height="326" fill="url(#mint)"/>
+      <rect x="61" y="65" width="518" height="326" fill="url(#beam)"/>
+      <rect x="61" y="65" width="518" height="326" fill="#777" filter="url(#grain)" opacity=".045"/>
+      <path d="M334 65V391" stroke="#FFFFFF" stroke-opacity=".25"/>
+      <path d="M340 65V391" stroke="#AAA6BF" stroke-opacity=".08"/>
+    </g>
+    <rect x="61.75" y="65.75" width="516.5" height="324.5" rx="24.25" stroke="url(#rim)" stroke-width="1.5"/>
+    <rect x="65" y="69" width="510" height="318" rx="21" stroke="#FFF" stroke-opacity=".48" stroke-width=".7"/>
+    <g font-family="-apple-system, BlinkMacSystemFont, 'Helvetica Neue', 'PingFang SC', 'Microsoft YaHei', sans-serif">
+      <text x="101" y="115" fill="#656577" font-size="12" font-weight="500" letter-spacing="2.8">JAPAN EDITION</text>
+      <g transform="translate(489 94)">
+        <rect width="50" height="27" rx="13.5" fill="#FFFFFF" fill-opacity=".65" stroke="#FFFFFF"/>
+        <circle cx="14" cy="13.5" r="5" fill="#C95564"/>
+        <text x="26" y="18" fill="#505061" font-size="12" font-weight="600" letter-spacing="1">JP</text>
+      </g>
+      <text x="96" y="245" fill="#FFF" opacity=".8" font-size="110" font-weight="550" letter-spacing="-7" transform="translate(0 1)">plus</text>
+      <text x="96" y="245" fill="url(#ink)" font-size="110" font-weight="550" letter-spacing="-7">plus</text>
+      <text x="103" y="289" fill="#484855" font-size="24" font-weight="500" letter-spacing="3">日区成品号</text>
+      <path d="M103 329H537" stroke="#9C9CAD" stroke-opacity=".24"/>
+      <text x="103" y="357" fill="#777789" font-size="10" font-weight="500" letter-spacing="2.5">DIGITAL ACCOUNT</text>
+      <text x="537" y="357" fill="#777789" font-size="10" font-weight="500" letter-spacing="2" text-anchor="end">PLUS / JP</text>
+    </g>
+    <g filter="url(#emboss)">
+      <use href="#plus" transform="translate(4 7)" fill="url(#depth)" stroke="#898098" stroke-width=".6"/>
+      <use href="#plus" fill="url(#chrome)" stroke="#F8F6FF" stroke-width="1.4"/>
+      <path d="M430 143H456Q461 143 461 148V185H499" stroke="#FFF" stroke-opacity=".8" stroke-width="1.4" stroke-linecap="round"/>
+      <path d="M380 218Q380 224 385 224H423V261" stroke="#FFF" stroke-opacity=".6" stroke-width="1.2" stroke-linecap="round"/>
+    </g>
+  </g>
+</svg>

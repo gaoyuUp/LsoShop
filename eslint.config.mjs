@@ -12,6 +12,12 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // 本地验收脚本产物，不参与代码检查
+    ".chrome-*/**",
+    "screenshots/**",
+    "scripts/shots.mjs",
+    "scripts/e2e.mjs",
+    "scripts/e2e2.mjs",
   ]),
 ]);
 

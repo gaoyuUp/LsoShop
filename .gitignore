@@ -39,3 +39,13 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# local
+/storage
+/backups
+/.pnpm-store
+
+
+# ignore all dotfiles except the ignore rules themselves
+.*
+!.gitignore
