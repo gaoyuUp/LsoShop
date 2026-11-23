@@ -14,8 +14,6 @@ const privateRoutes = [
 ];
 
 const nextConfig: NextConfig = {
-  // 打包成独立服务，部署到服务器时只需 .next/standalone + static + public
-  output: "standalone",
   poweredByHeader: false,
   // 关闭开发环境左下角指示器，保持界面干净（生产环境本就不显示）
   devIndicators: false,
