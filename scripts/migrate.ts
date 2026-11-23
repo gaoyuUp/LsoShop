@@ -3,6 +3,7 @@
  * 线上部署时同样执行这一步即可建表 / 升级表结构。
  */
 import { config } from "dotenv";
+config({ path: ".env.production" });
 config({ path: ".env.local" });
 config();
 

@@ -4,6 +4,7 @@
  * - 商品表为空时写入初始商品（可重复执行，不会覆盖已有商品）
  */
 import { config } from "dotenv";
+config({ path: ".env.production" });
 config({ path: ".env.local" });
 config();
 
