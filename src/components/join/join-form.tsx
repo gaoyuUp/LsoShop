@@ -42,7 +42,7 @@ export function JoinForm({ initialInvite = "", initialMode = "activate" }: { ini
         }
         setSent(true);
         setDevCode(result.devCode ?? "");
-        toast.success(result.devCode ? "验证码已生成，请在后台测试验证码页面查看" : "验证码已发送，请检查邮箱");
+        toast.success(result.devCode ? "验证码已生成，请联系管理员获取" : "验证码已发送，请检查邮箱");
       } catch {
         setError("网络异常，请稍后重试");
       }
@@ -98,7 +98,7 @@ export function JoinForm({ initialInvite = "", initialMode = "activate" }: { ini
         <h2 className="text-xl font-semibold tracking-tight">{mode === "activate" ? "开通代理账号" : "代理登录"}</h2>
         <p className="mt-1.5 text-[13px] leading-relaxed text-muted-foreground">
           {mode === "activate"
-            ? "管理员只提供邀请码；邮箱请填写代理本人的邮箱。测试阶段未开启邮件发送时，验证码由管理员在后台「测试验证码」页面查看。每个邀请码只能开通一个账号。"
+            ? "管理员只提供邀请码；邮箱请填写代理本人的邮箱。提交后会向该邮箱发送验证码，如未收到请联系管理员协助。每个邀请码只能开通一个账号。"
             : "使用开通时的邮箱接收验证码，不需要密码。"}
         </p>
       </div>
@@ -160,7 +160,7 @@ export function JoinForm({ initialInvite = "", initialMode = "activate" }: { ini
             </label>
             {devCode && (
               <p className="rounded-xl border border-amber-500/20 bg-amber-500/[0.06] px-3 py-2 text-[12px] text-amber-700 dark:text-amber-300">
-                本地调试验证码：<span className="font-mono font-semibold">{devCode}</span>（仅开发环境显示）
+                验证码：<span className="font-mono font-semibold">{devCode}</span>（如未收到邮件，请联系管理员）
               </p>
             )}
             <button

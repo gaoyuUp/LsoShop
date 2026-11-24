@@ -1,0 +1,245 @@
+/*! Embedded Inter subset for a self-contained copyable component.
+Copyright 2020 The Inter Project Authors (https://github.com/rsms/inter)
+
+This Font Software is licensed under the SIL Open Font License, Version 1.1.
+This license is copied below, and is also available with a FAQ at:
+https://scripts.sil.org/OFL
+
+
+-----------------------------------------------------------
+SIL OPEN FONT LICENSE Version 1.1 - 26 February 2007
+-----------------------------------------------------------
+
+PREAMBLE
+The goals of the Open Font License (OFL) are to stimulate worldwide
+development of collaborative font projects, to support the font creation
+efforts of academic and linguistic communities, and to provide a free and
+open framework in which fonts may be shared and improved in partnership
+with others.
+
+The OFL allows the licensed fonts to be used, studied, modified and
+redistributed freely as long as they are not sold by themselves. The
+fonts, including any derivative works, can be bundled, embedded,
+redistributed and/or sold with any software provided that any reserved
+names are not used by derivative works. The fonts and derivatives,
+however, cannot be released under any other type of license. The
+requirement for fonts to remain under this license does not apply
+to any document created using the fonts or their derivatives.
+
+DEFINITIONS
+"Font Software" refers to the set of files released by the Copyright
+Holder(s) under this license and clearly marked as such. This may
+include source files, build scripts and documentation.
+
+"Reserved Font Name" refers to any names specified as such after the
+copyright statement(s).
+
+"Original Version" refers to the collection of Font Software components as
+distributed by the Copyright Holder(s).
+
+"Modified Version" refers to any derivative made by adding to, deleting,
+or substituting -- in part or in whole -- any of the components of the
+Original Version, by changing formats or by porting the Font Software to a
+new environment.
+
+"Author" refers to any designer, engineer, programmer, technical
+writer or other person who contributed to the Font Software.
+
+PERMISSION & CONDITIONS
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of the Font Software, to use, study, copy, merge, embed, modify,
+redistribute, and sell modified and unmodified copies of the Font
+Software, subject to the following conditions:
+
+1) Neither the Font Software nor any of its individual components,
+in Original or Modified Versions, may be sold by itself.
+
+2) Original or Modified Versions of the Font Software may be bundled,
+redistributed and/or sold with any software, provided that each copy
+contains the above copyright notice and this license. These can be
+included either as stand-alone text files, human-readable headers or
+in the appropriate machine-readable metadata fields within text or
+binary files as long as those fields can be easily viewed by the user.
+
+3) No Modified Version of the Font Software may use the Reserved Font
+Name(s) unless explicit written permission is granted by the corresponding
+Copyright Holder. This restriction only applies to the primary font name as
+presented to the users.
+
+4) The name(s) of the Copyright Holder(s) or the Author(s) of the Font
+Software shall not be used to promote, endorse or advertise any
+Modified Version, except to acknowledge the contribution(s) of the
+Copyright Holder(s) and the Author(s) or with their explicit written
+permission.
+
+5) The Font Software, modified or unmodified, in part or in whole,
+must be distributed entirely under this license, and must not be
+distributed under any other license. The requirement for fonts to
+remain under this license does not apply to any document created
+using the Font Software.
+
+TERMINATION
+This license becomes null and void if any of the above conditions are
+not met.
+
+DISCLAIMER
+THE FONT SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO ANY WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT
+OF COPYRIGHT, PATENT, TRADEMARK, OR OTHER RIGHT. IN NO EVENT SHALL THE
+COPYRIGHT HOLDER BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+INCLUDING ANY GENERAL, SPECIAL, INDIRECT, INCIDENTAL, OR CONSEQUENTIAL
+DAMAGES, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+FROM, OUT OF THE USE OR INABILITY TO USE THE FONT SOFTWARE OR FROM
+OTHER DEALINGS IN THE FONT SOFTWARE.
+
+*/@font-face{font-family:ElementalInter;src:url(./inter.woff) format("woff");font-weight:100 900;font-style:normal;font-display:swap}:root{--bg-base: #040405;--card-w: clamp(148px, 16.4cqw, 240px);--card-h: clamp(238px, 26.4cqw, 386px)}*{box-sizing:border-box;margin:0;padding:0;user-select:none;-webkit-user-select:none}html,body{width:100%;height:100%;overflow:hidden;background-color:var(--bg-base);font-family:ElementalInter,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif;color:#fff;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}.stage{position:relative;width:100%;height:var(--motion-height,100dvh);display:flex;align-items:center;justify-content:center;overflow:hidden;background:#040405;touch-action:pan-y;perspective:1200px}#gl-canvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:1}#fx-mid{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:2}#fx-front{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:6}.carousel-layer{position:relative;width:100%;height:100%;z-index:4;pointer-events:none}.card{--ignite: 0;--warmth: 0;position:absolute;left:50%;top:46.5%;width:var(--card-w);height:var(--card-h);margin-left:calc(var(--card-w) * -.5);margin-top:calc(var(--card-h) * -.5);border-radius:999px;pointer-events:auto;cursor:pointer;outline:none;will-change:transform,opacity;transform-style:preserve-3d;-webkit-tap-highlight-color:transparent}.card-shell{position:relative;width:100%;height:100%;border-radius:999px;overflow:hidden;background:rgba(3,3,4,calc(1 - var(--warmth)));border:1px solid rgba(255,255,255,calc(.13 * (1 - var(--warmth))));box-shadow:0 26px 60px rgba(0,0,0,calc(.78 - .44 * var(--warmth))),inset 0 1px rgba(255,255,255,calc(.08 * (1 - var(--warmth))));transition:transform .35s cubic-bezier(.22,1,.36,1),border-color .3s ease}.card:not(.is-active):hover .card-shell{border-color:#ffffff52;transform:translateY(-2px) scale(1.015)}.card-dark-tint{position:absolute;inset:0;border-radius:inherit;opacity:calc(1 - var(--warmth))}.card[data-id=ember] .card-dark-tint{background:radial-gradient(ellipse 92% 58% at 50% 95%,#801016bd,#2c060a57 48%,#03030400 82%)}.card[data-id=solar] .card-dark-tint{background:radial-gradient(ellipse 92% 58% at 50% 95%,#7c1c0eb3,#2e0c0652 48%,#03030400 82%)}.card[data-id=breeze] .card-dark-tint{background:radial-gradient(ellipse 92% 58% at 50% 95%,#0c6838b8,#05261457 48%,#03030400 82%)}.card[data-id=bloom] .card-dark-tint{background:radial-gradient(ellipse 92% 58% at 50% 95%,#7a0e22b8,#2a060e52 48%,#03030400 82%)}.card-active-mesh{position:absolute;inset:0;border-radius:inherit;opacity:var(--warmth);transform:scale(calc(1.08 - .08 * var(--warmth)));filter:brightness(calc(.65 + .35 * var(--ignite)))}.card[data-id=ember] .card-active-mesh{background:radial-gradient(ellipse 84% 62% at 22% 28%,#c456b2f0,#c456b200 68%),radial-gradient(ellipse 78% 58% at 86% 30%,#d6983cf2,#d6983c00 68%),radial-gradient(ellipse 80% 60% at 74% 72%,#ee726cf0,#ee726c00 70%),radial-gradient(ellipse 95% 62% at 32% 86%,#c41e3efa,#91122ad1 58%,#78142800 90%),linear-gradient(155deg,#c26ea8,#c84f6a 48%,#a61e34)}.card[data-id=solar] .card-active-mesh{background:radial-gradient(ellipse 82% 58% at 18% 26%,#e08e80f0,#e08e8000 68%),radial-gradient(ellipse 80% 58% at 84% 26%,#9ac254f0,#9ac25400 68%),radial-gradient(ellipse 82% 58% at 24% 82%,#d66c2ef5,#d66c2e00 72%),radial-gradient(ellipse 80% 56% at 82% 84%,#f2d286f5,#f2d28600 72%),linear-gradient(155deg,#d79c84,#c98658,#cc7b3b)}.card[data-id=breeze] .card-active-mesh{background:radial-gradient(ellipse 82% 58% at 22% 24%,#92ba7cf0,#92ba7c00 68%),radial-gradient(ellipse 82% 60% at 82% 28%,#98cedaf2,#98ceda00 68%),radial-gradient(ellipse 84% 62% at 22% 84%,#36aa5cf5,#36aa5c00 72%),radial-gradient(ellipse 84% 60% at 82% 82%,#86e8c6f0,#86e8c600 72%),linear-gradient(160deg,#8fb89d,#58b493 52%,#3ca674)}.card[data-id=bloom] .card-active-mesh{background:radial-gradient(ellipse 82% 60% at 20% 24%,#a452e4f2,#a452e400 68%),radial-gradient(ellipse 78% 58% at 84% 28%,#d29476f0,#d2947600 68%),radial-gradient(ellipse 82% 62% at 76% 74%,#e46094f0,#e4609400 72%),radial-gradient(ellipse 90% 62% at 30% 88%,#9e1662f5,#9e166200 76%),linear-gradient(155deg,#ab5cc4,#c8448a 52%,#8e185b)}.card-rim{position:absolute;inset:0;border-radius:inherit;pointer-events:none;opacity:var(--ignite)}.card[data-id=ember] .card-rim{box-shadow:inset 0 2px 22px #ffe4bebd,inset 0 -8px 22px #ff4a2873}.card[data-id=solar] .card-rim{box-shadow:inset 0 0 24px #fffce0eb,inset 0 0 5px 2px #fff8d4f2}.card[data-id=breeze] .card-rim{box-shadow:inset 0 0 22px #beffecc7,inset 0 0 4px 1.5px #b4ffe6d1}.card[data-id=bloom] .card-rim{box-shadow:inset 0 2px 20px #ffdcf2b8,inset 0 -10px 26px #ff56a880}.card-hover-glint{position:absolute;inset:0;border-radius:inherit;pointer-events:none;opacity:0;transition:opacity .3s ease;background:radial-gradient(145px circle at var(--mx, 50%) var(--my, 18%),rgba(255,255,255,.24),rgba(255,255,255,0) 68%)}.card:not(.is-active):hover .card-hover-glint{opacity:1}.card-content{position:relative;z-index:2;width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:clamp(18px,2.2cqw,30px) 16px clamp(26px,3.1cqw,44px);text-align:center}.card-index{font-size:clamp(9px,.72cqw,11px);font-weight:500;letter-spacing:.14em;color:rgba(255,255,255,calc(.56 + .34 * var(--warmth)));font-variant-numeric:tabular-nums}.card-icon{width:clamp(58px,6.4cqw,92px);height:clamp(58px,6.4cqw,92px);display:flex;align-items:center;justify-content:center;margin-top:clamp(2px,.4cqw,8px);color:rgba(255,255,255,calc(.78 + .22 * var(--warmth)));transform:scale(calc(1 + .05 * var(--ignite)));filter:drop-shadow(0 0 calc(14px * var(--ignite)) rgba(255,255,255,calc(.42 * var(--ignite))))}.card-icon svg{width:100%;height:100%;overflow:visible}.card-meta{display:flex;flex-direction:column;align-items:center;gap:clamp(4px,.48cqw,7px);margin-bottom:clamp(4px,.8cqw,14px)}.card-title{font-size:clamp(20px,2.08cqw,31px);font-weight:700;letter-spacing:-.025em;line-height:1.1;color:rgba(255,255,255,calc(.8 + .2 * var(--warmth)));text-shadow:0 2px 14px rgba(0,0,0,calc(.28 * var(--warmth)))}.card-subtitle{font-size:clamp(7.5px,.62cqw,9.5px);font-weight:600;letter-spacing:.16em;text-transform:uppercase;transition:color .45s ease}.card[data-id=ember] .card-subtitle{color:#eb8484bf}.card[data-id=solar] .card-subtitle{color:#ec9478bf}.card[data-id=breeze] .card-subtitle{color:#7ad6a4c7}.card[data-id=bloom] .card-subtitle{color:#e88298bf}.card.is-ignited .card-subtitle{color:#ffffffe6}.card:focus-visible .card-shell{box-shadow:0 0 0 2px #ffffffe0,0 24px 55px #000000b8}.grain-overlay{position:absolute;inset:0;pointer-events:none;z-index:20;opacity:.055;mix-blend-mode:soft-light;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.92' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");background-size:160px 160px}.stage{container-type:inline-size;isolation:isolate}.card[aria-hidden=true]{pointer-events:none!important}[data-theme=light]{background:#f4f4f4}[data-theme=light] .grain-overlay{display:none}[data-reduced=true] *{transition:none!important;animation:none!important}
+
+
+/* Project adaptation: feature descriptions and Chinese card labels */
+.card-title { max-width: 100%; }
+.card-desc {
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  margin-top: 0;
+  padding: 0 6px;
+  font-size: 9px;
+  line-height: 1.45;
+  letter-spacing: .01em;
+  color: rgba(255,255,255,.58);
+  transition: max-height .45s ease, opacity .35s ease, margin-top .35s ease;
+}
+.card.is-active .card-desc {
+  max-height: 34px;
+  opacity: 1;
+  margin-top: 5px;
+}
+.card:lang(zh) .card-title { letter-spacing: -.05em; }
+
+
+/* Horizontal capsule adaptation */
+.card, .card-shell, .card-hover-glint { border-radius: 999px; }
+.card-content {
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 16px;
+  padding: 20px 26px;
+  text-align: left;
+}
+.card-index { position: absolute; top: 10px; right: 16px; z-index: 4; }
+.card-icon { width: 48px; height: 48px; margin: 0; flex: 0 0 48px; }
+.card-meta { align-items: flex-start; gap: 2px; margin: 0; min-width: 0; flex: 1; text-align: left; }
+.card-title { font-size: 20px; line-height: 1.12; letter-spacing: -.045em; }
+.card-subtitle { font-size: 8px; letter-spacing: .14em; }
+.card-desc { margin-top: 4px; padding: 0; max-height: 0; font-size: 10px; line-height: 1.45; text-align: left; }
+.card.is-active .card-desc { max-height: 32px; margin-top: 4px; }
+.card.is-active .card-shell { transform: scale(1.035); }
+
+@media (max-width: 640px) {
+  .card-content { gap: 10px; padding: 13px 16px; }
+  .card-icon { width: 34px; height: 34px; flex-basis: 34px; }
+  .card-title { font-size: 15px; }
+  .card-subtitle { font-size: 6.5px; letter-spacing: .1em; }
+  .card-desc { font-size: 8.5px; max-height: 0; }
+  .card.is-active .card-desc { max-height: 27px; }
+  .card.is-active .card-shell { transform: none; }
+  .card-index { top: 7px; right: 10px; font-size: 7px; }
+}
+
+/* Light theme surface */
+[data-theme=light] .stage { background: #f4f1fb; }
+[data-theme=light] .card-shell { background: rgba(255,255,255,.62); border-color: rgba(27,16,41,.12); box-shadow: 0 18px 40px rgba(35,20,80,.12), inset 0 1px rgba(255,255,255,.8); }
+[data-theme=light] .card-title { color: #171027; text-shadow: none; }
+[data-theme=light] .card-subtitle { color: rgba(45,30,80,.43); }
+[data-theme=light] .card-desc { color: rgba(35,25,55,.58); }
+[data-theme=light] .card-index { color: rgba(35,25,55,.4); }
+[data-theme=light] .card-content { color: #171027; }
+[data-theme=light] .grain-overlay { display: none; }
+
+
+/* Stronger light-theme text contrast */
+[data-theme=light] .card[data-id] .card-title { color: #171027; text-shadow: none; }
+[data-theme=light] .card[data-id] .card-subtitle { color: rgba(42,28,72,.58); }
+[data-theme=light] .card[data-id] .card-desc { color: rgba(35,25,55,.62); }
+[data-theme=light] .card[data-id] .card-index { color: rgba(35,25,55,.46); }
+[data-theme=light] .card[data-id] .card-icon { color: rgba(40,25,70,.68); }
+[data-theme=light] .card.is-active .card-title { color: #fff; text-shadow: 0 2px 14px rgba(0,0,0,.28); }
+[data-theme=light] .card.is-active .card-subtitle { color: rgba(255,255,255,.76); }
+[data-theme=light] .card.is-active .card-desc { color: rgba(255,255,255,.82); }
+[data-theme=light] .card.is-active .card-index { color: rgba(255,255,255,.6); }
+[data-theme=light] .card.is-active .card-icon { color: #fff; }
+
+
+/* Mobile vertical tree spine */
+@media (max-width: 640px) {
+  .carousel-layer::before {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 14%;
+    bottom: 14%;
+    width: 1px;
+    transform: translateX(-50%);
+    background: linear-gradient(to bottom, transparent, rgba(167,139,250,.3) 20%, rgba(167,139,250,.3) 80%, transparent);
+    opacity: .55;
+    pointer-events: none;
+    z-index: 0;
+  }
+  [data-theme=light] .carousel-layer::before {
+    background: linear-gradient(to bottom, transparent, rgba(80,55,150,.18) 20%, rgba(80,55,150,.18) 80%, transparent);
+  }
+}
+
+
+/* Mobile: portrait cards side by side, like the original elemental tree */
+@media (max-width: 640px) {
+  .carousel-layer::before { display: none; }
+  .card-content {
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0;
+    padding: 16px 8px 22px;
+    text-align: center;
+  }
+  .card-icon {
+    width: 44px;
+    height: 44px;
+    flex: 0 0 44px;
+    margin-top: 2px;
+  }
+  .card-meta {
+    flex: none;
+    align-items: center;
+    gap: 3px;
+    margin: 0;
+    text-align: center;
+  }
+  .card-title { font-size: 16px; line-height: 1.1; }
+  .card-subtitle { font-size: 6px; letter-spacing: .1em; }
+  .card-desc {
+    max-height: 0;
+    margin-top: 0;
+    padding: 0 2px;
+    font-size: 8px;
+    line-height: 1.35;
+    text-align: center;
+  }
+  .card.is-active .card-desc { max-height: 30px; margin-top: 4px; }
+  .card-index { top: 10px; right: 12px; font-size: 7px; }
+  .card.is-active .card-shell { transform: none; }
+}
+
+
+/* Final mobile capsule size */
+@media (max-width: 640px) {
+  .card-content { padding: 14px 6px 18px; }
+  .card-icon { width: 38px; height: 38px; flex-basis: 38px; margin-top: 1px; }
+  .card-title { font-size: 14px; }
+  .card-subtitle { font-size: 5.5px; letter-spacing: .08em; }
+  .card-desc { font-size: 7.5px; line-height: 1.3; }
+  .card.is-active .card-desc { max-height: 26px; margin-top: 3px; }
+  .card-index { top: 8px; right: 10px; font-size: 6.5px; }
+}

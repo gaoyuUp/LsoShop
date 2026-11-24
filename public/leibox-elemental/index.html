@@ -1,0 +1,112 @@
+<!doctype html><html lang="zh-CN"><head><script>if(new URLSearchParams(location.search).get("theme")==="light")document.documentElement.setAttribute("data-leibox-motion-preview","");</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>灵搜小店 · 服务保障</title><link rel="stylesheet" href="./styles.css"></head><!-- Adapted from LeiBox Elemental Card Carousel (design by @kaolti). -->
+<body>
+  <main class="stage" id="stage" tabindex="0" aria-label="Elemental Cards Carousel">
+    <canvas id="gl-canvas" aria-hidden="true"></canvas>
+    <canvas id="fx-mid" aria-hidden="true"></canvas>
+
+    <div class="carousel-layer" id="carousel-layer" role="region" aria-roledescription="carousel" aria-label="Elements. Use Left, Right, Home, End or keys 1 to 4">
+      <!-- 01 Ember -->
+      <div class="card is-active" data-index="0" data-id="ember" role="button" tabindex="0" aria-label="01 自动发货，付款成功即刻交付" aria-pressed="true">
+        <div class="card-shell">
+          <div class="card-dark-tint"></div>
+          <div class="card-active-mesh"></div>
+          <div class="card-rim"></div>
+          <div class="card-hover-glint"></div>
+          <div class="card-content">
+            <span class="card-index">01</span>
+            <div class="card-icon" aria-hidden="true"><svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M35 8 18 35h12l-2 21 18-30H34l1-18Z"/></svg></div>
+            <div class="card-meta">
+              <div class="card-title">自动发货</div>
+              <div class="card-subtitle">INSTANT DELIVERY</div>
+              <div class="card-desc">付款成功即刻交付，无需等待。</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 02 Solar -->
+      <div class="card" data-index="1" data-id="solar" role="button" tabindex="0" aria-label="02 首登质保，首次登录异常按须知售后" aria-pressed="false">
+        <div class="card-shell">
+          <div class="card-dark-tint"></div>
+          <div class="card-active-mesh"></div>
+          <div class="card-rim"></div>
+          <div class="card-hover-glint"></div>
+          <div class="card-content">
+            <span class="card-index">02</span>
+            <div class="card-icon" aria-hidden="true"><svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M32 8 52 15v12c0 12-8 22-20 29C20 49 12 39 12 27V15l20-7Z"/><path d="m23 31 6 6 12-13"/></svg></div>
+            <div class="card-meta">
+              <div class="card-title">首登质保</div>
+              <div class="card-subtitle">FIRST LOGIN CARE</div>
+              <div class="card-desc">首次登录异常，按须知售后。</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 03 Breeze -->
+      <div class="card" data-index="2" data-id="breeze" role="button" tabindex="0" aria-label="03 邮件留底，交付内容同步发送至邮箱" aria-pressed="false">
+        <div class="card-shell">
+          <div class="card-dark-tint"></div>
+          <div class="card-active-mesh"></div>
+          <div class="card-rim"></div>
+          <div class="card-hover-glint"></div>
+          <div class="card-content">
+            <span class="card-index">03</span>
+            <div class="card-icon" aria-hidden="true"><svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><rect x="10" y="16" width="44" height="32" rx="4"/><path d="m12 20 20 16 20-16"/></svg></div>
+            <div class="card-meta">
+              <div class="card-title">邮件留底</div>
+              <div class="card-subtitle">EMAIL RECORD</div>
+              <div class="card-desc">交付内容同步发送至邮箱。</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 04 Bloom -->
+      <div class="card" data-index="3" data-id="bloom" role="button" tabindex="0" aria-label="04 随时查单，订单号加查询口令即可查看" aria-pressed="false">
+        <div class="card-shell">
+          <div class="card-dark-tint"></div>
+          <div class="card-active-mesh"></div>
+          <div class="card-rim"></div>
+          <div class="card-hover-glint"></div>
+          <div class="card-content">
+            <span class="card-index">04</span>
+            <div class="card-icon" aria-hidden="true"><svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><circle cx="29" cy="29" r="12"/><path d="m38 38 12 12"/></svg></div>
+            <div class="card-meta">
+              <div class="card-title">随时查单</div>
+              <div class="card-subtitle">ORDER LOOKUP</div>
+              <div class="card-desc">订单号 + 查询口令即可查看。</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <canvas id="fx-front" aria-hidden="true"></canvas>
+    <div class="grain-overlay" aria-hidden="true"></div>
+  </main>
+
+  <script src="./carousel.js"></script>
+  <script>
+    (() => {
+      const cards = Array.from(document.querySelectorAll('.card'));
+      const stage = document.getElementById('stage');
+      const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+      let index = Math.max(0, cards.findIndex((c) => c.classList.contains('is-active')));
+      let timer = 0;
+      const stop = () => { if (timer) { clearInterval(timer); timer = 0; } };
+      const start = () => {
+        if (reduce) return;
+        stop();
+        timer = setInterval(() => {
+          index = (index + 1) % cards.length;
+          cards[index].click();
+        }, 4600);
+      };
+      stage.addEventListener('mouseenter', stop);
+      stage.addEventListener('mouseleave', start);
+      stage.addEventListener('focusin', stop);
+      window.addEventListener('pagehide', stop, { once: true });
+      start();
+    })();
+  </script></body></html>

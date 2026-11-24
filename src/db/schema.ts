@@ -1,4 +1,4 @@
-import { relations, sql } from "drizzle-orm";
+import { sql } from "drizzle-orm";
 import {
   bigint,
   boolean,
@@ -222,22 +222,6 @@ export const settings = mysqlTable("settings", {
   value: text("value").notNull(),
   updatedAt: updatedAt(),
 });
-
-export const productsRelations = relations(products, ({ many, one }) => ({
-  variants: many(productVariants),
-  category: one(productCategories, {
-    fields: [products.categoryId],
-    references: [productCategories.id],
-  }),
-}));
-
-export const productCategoriesRelations = relations(productCategories, ({ many }) => ({
-  products: many(products),
-}));
-
-export const productVariantsRelations = relations(productVariants, ({ one }) => ({
-  product: one(products, { fields: [productVariants.productId], references: [products.id] }),
-}));
 
 /** 代理邀请码（管理员创建，每码只能开通一个代理） */
 export const affiliateInvites = mysqlTable(

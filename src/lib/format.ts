@@ -25,14 +25,6 @@ export const ORDER_STATUS: Record<string, { label: string; tone: "amber" | "sky"
   refunded: { label: "已退款", tone: "rose" },
 };
 
-export const EMAIL_STATUS: Record<string, string> = {
-  none: "未发送",
-  queued: "排队中",
-  sent: "已发送",
-  failed: "发送失败",
-  skipped: "未配置邮箱",
-};
-
 export const THEMES = ["violet", "emerald", "sky", "amber", "rose", "mono"] as const;
 export type ThemeName = (typeof THEMES)[number];
 export const THEME_LABEL: Record<ThemeName, string> = {

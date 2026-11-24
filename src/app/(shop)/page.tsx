@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { connection } from "next/server";
 import { Hero } from "@/components/site/hero";
+import { HomeFeaturesEmbed } from "@/components/site/home-features-embed";
 import { ProductGrid } from "@/components/site/product-grid";
 import { getDictionary } from "@/i18n";
 import { getListedProducts, getSetting } from "@/lib/catalog";
@@ -61,7 +62,9 @@ export default async function HomePage() {
           dangerouslySetInnerHTML={{ __html: itemListJsonLd }}
         />
       )}
-      <Hero announcement={announcement} />
+      <Hero announcement={announcement} compact>
+        <HomeFeaturesEmbed />
+      </Hero>
 
       <section id="products" className="mx-auto max-w-6xl scroll-mt-24 px-4 sm:px-6">
         <div className="mb-8 flex items-end justify-between gap-4 px-2">
