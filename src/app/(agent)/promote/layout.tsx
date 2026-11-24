@@ -6,6 +6,7 @@ import { SiteFooter } from "@/components/site/site-footer";
 import { SiteHeader } from "@/components/site/site-header";
 import { requireAffiliate } from "@/lib/auth/affiliate-server";
 import { resolveAgentSupport } from "@/lib/agent-context";
+import { getSiteConfig } from "@/lib/site-config";
 
 export const metadata: Metadata = {
   title: "推广中心",
@@ -13,18 +14,18 @@ export const metadata: Metadata = {
 };
 
 export default async function PromoteLayout({ children }: LayoutProps<"/promote">) {
-  const [agent, support] = await Promise.all([requireAffiliate(), resolveAgentSupport()]);
+  const [agent, support, site] = await Promise.all([requireAffiliate(), resolveAgentSupport(), getSiteConfig()]);
   const headerAgent = { code: agent.code, email: agent.email, nickname: agent.nickname };
 
   return (
     <>
       <PromoteBackground />
-      <SiteHeader support={support} agent={headerAgent} />
+      <SiteHeader support={support} agent={headerAgent} siteName={site.name} logoUrl={site.logoUrl} />
       <main className="mx-auto w-full max-w-6xl px-4 pb-16 pt-8 sm:px-6">
         <PromotionNav agent={headerAgent} />
         <div className="mt-6"><PromotePageTransition>{children}</PromotePageTransition></div>
       </main>
-      <SiteFooter />
+      <SiteFooter siteName={site.name} logoUrl={site.logoUrl} />
     </>
   );
 }

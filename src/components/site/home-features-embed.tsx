@@ -1,5 +1,5 @@
 "use client";
-import { useSyncExternalStore } from "react";
+import { useEffect, useRef, useSyncExternalStore } from "react";
 
 function subscribe(callback: () => void) {
   const observer = new MutationObserver(callback);
@@ -17,6 +17,24 @@ function getServerSnapshot() {
 
 export function HomeFeaturesEmbed() {
   const theme = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+  const frameRef = useRef<HTMLIFrameElement>(null);
+
+  useEffect(() => {
+    const notify = () => {
+      frameRef.current?.contentWindow?.postMessage(
+        { type: "lso-carousel-visibility", visible: !document.hidden },
+        "*",
+      );
+    };
+    const frame = frameRef.current;
+    document.addEventListener("visibilitychange", notify);
+    frame?.addEventListener("load", notify);
+    notify();
+    return () => {
+      document.removeEventListener("visibilitychange", notify);
+      frame?.removeEventListener("load", notify);
+    };
+  }, [theme]);
 
   return (
     <div className="w-full">
@@ -31,6 +49,7 @@ export function HomeFeaturesEmbed() {
       </div>
       <div className="relative overflow-hidden rounded-[30px] border border-black/[0.06] bg-[#f4f0ff] shadow-[0_24px_60px_-38px_rgba(40,20,100,0.45)] dark:border-white/[0.08] dark:bg-[#040405]">
         <iframe
+          ref={frameRef}
           key={theme}
           src={`/leibox-elemental/index.html?theme=${theme}`}
           title="服务保障卡片轮播"

@@ -5,6 +5,7 @@ import { LoginForm } from "@/components/admin/login-form";
 import { LogoMark } from "@/components/site/logo";
 import { ThemeToggle } from "@/components/site/theme-toggle";
 import { getAdmin } from "@/lib/auth/admin";
+import { getSiteConfig } from "@/lib/site-config";
 
 export const metadata: Metadata = {
   title: "后台登录",
@@ -12,7 +13,7 @@ export const metadata: Metadata = {
 };
 
 export default async function AdminLoginPage() {
-  const admin = await getAdmin();
+  const [admin, site] = await Promise.all([getAdmin(), getSiteConfig()]);
   if (admin) redirect("/admin");
 
   return (
@@ -35,10 +36,15 @@ export default async function AdminLoginPage() {
 
         <div className="relative">
           <div className="inline-flex items-center gap-3">
-            <span className="grid size-10 place-items-center rounded-xl bg-white/10 text-white backdrop-blur">
-              <LogoMark animated className="size-7" />
-            </span>
-            <span className="text-[15px] font-semibold tracking-tight">灵搜小店 · 管理后台</span>
+            {site.logoUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={site.logoUrl} alt={site.name} className="size-10 shrink-0 rounded-xl object-contain" />
+            ) : (
+              <span className="grid size-10 place-items-center rounded-xl bg-white/10 text-white backdrop-blur">
+                <LogoMark animated className="size-7" />
+              </span>
+            )}
+            <span className="text-[15px] font-semibold tracking-tight">{site.name} · 管理后台</span>
           </div>
         </div>
 
@@ -76,17 +82,22 @@ export default async function AdminLoginPage() {
           </ul>
         </div>
 
-        <p className="relative text-[11px] text-white/30">© {new Date().getFullYear()} 灵搜小店 · 保留所有权利</p>
+        <p className="relative text-[11px] text-white/30">© {new Date().getFullYear()} {site.name} · 保留所有权利</p>
       </div>
 
       {/* 右侧登录区 */}
       <div className="relative flex flex-col">
         <div className="flex items-center justify-between px-5 py-5 sm:px-8">
           <div className="flex items-center gap-2.5 lg:invisible">
-            <span className="grid size-8 place-items-center rounded-[10px] bg-foreground text-background">
-              <LogoMark className="size-6" />
-            </span>
-            <span className="text-sm font-semibold">灵搜小店</span>
+            {site.logoUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={site.logoUrl} alt={site.name} className="size-8 shrink-0 rounded-[10px] object-contain" />
+            ) : (
+              <span className="grid size-8 place-items-center rounded-[10px] bg-foreground text-background">
+                <LogoMark className="size-6" />
+              </span>
+            )}
+            <span className="text-sm font-semibold">{site.name}</span>
           </div>
           <ThemeToggle />
         </div>

@@ -25,11 +25,17 @@ export function AgentPromoCard({
   link,
   qrDataUrl,
   commissionRate,
+  brandName,
+  brandSlogan,
+  logoUrl,
 }: {
   code: string;
   link: string;
   qrDataUrl: string;
   commissionRate: number;
+  brandName: string;
+  brandSlogan: string;
+  logoUrl?: string;
 }) {
   const [copied, setCopied] = useState<"link" | "code" | "text" | null>(null);
   const reduceMotion = useReducedMotion();
@@ -97,11 +103,16 @@ export function AgentPromoCard({
             <div className="relative flex h-full flex-col justify-between" style={{ transform: "translateZ(28px)" }}>
               <div className="flex items-start justify-between gap-3">
                 <div className="flex items-center gap-2.5">
-                  <span className="grid size-9 place-items-center rounded-xl bg-gradient-to-br from-brand to-brand-2 text-white shadow-[0_8px_24px_-10px_var(--brand)]">
-                    <LogoMark className="size-6" />
-                  </span>
+                  {logoUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={logoUrl} alt={brandName} className="size-9 shrink-0 rounded-xl object-contain" />
+                  ) : (
+                    <span className="grid size-9 place-items-center rounded-xl bg-gradient-to-br from-brand to-brand-2 text-white shadow-[0_8px_24px_-10px_var(--brand)]">
+                      <LogoMark className="size-6" />
+                    </span>
+                  )}
                   <div>
-                    <div className="text-[13px] font-semibold tracking-tight text-white">灵搜小店</div>
+                    <div className="text-[13px] font-semibold tracking-tight text-white">{brandName}</div>
                     <div className="text-[8px] uppercase tracking-[0.22em] text-white/45">Agent promo</div>
                   </div>
                 </div>
@@ -171,7 +182,7 @@ export function AgentPromoCard({
             </a>
             <button
               type="button"
-              onClick={() => copy("text", `【灵搜小店】精选 AI 账号与订阅服务，专属价购买：${link}\n推广码：${code}`)}
+              onClick={() => copy("text", `【${brandName}】${brandSlogan}，专属价购买：${link}\n推广码：${code}`)}
               className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-black/[0.08] px-3 text-xs transition hover:border-black/20 dark:border-white/[0.1] dark:hover:border-white/25"
             >
               <Copy className="size-3.5" />

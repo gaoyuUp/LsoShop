@@ -11,6 +11,7 @@ import {
   Mail,
   Megaphone,
   Save,
+  Search,
   Send,
   ServerCog,
   ShieldCheck,
@@ -18,9 +19,11 @@ import {
   UploadCloud,
 } from "lucide-react";
 import { CopyButton } from "@/components/admin/copy-button";
+import { ImageField } from "@/components/admin/image-field";
 import { SubmitButton } from "@/components/admin/submit-button";
-import { changePasswordAction, saveMailSettingsAction, savePromoSettingsAction, saveSettingsAction, sendTestMailAction } from "@/lib/actions/settings";
+import { changePasswordAction, saveMailSettingsAction, savePromoSettingsAction, saveSeoSettingsAction, saveSettingsAction, sendTestMailAction } from "@/lib/actions/settings";
 import { getSettingsMap } from "@/lib/admin-data";
+import { getSiteConfig } from "@/lib/site-config";
 import { SupportChannelIcon } from "@/components/site/support-icons";
 import { requireAdmin } from "@/lib/auth/admin";
 import { env } from "@/lib/env";
@@ -37,15 +40,24 @@ export default async function AdminSettingsPage({ searchParams }: PageProps<"/ad
   const password = sp.password === "1";
   const promoSaved = sp.promoSaved === "1";
   const mailSaved = sp.mailSaved === "1";
+  const seoSaved = sp.seoSaved === "1";
   const mailTest = typeof sp.mailTest === "string" ? sp.mailTest : "";
   const error = typeof sp.error === "string" ? sp.error : "";
-  const [settings, mail] = await Promise.all([
+  const [settings, mail, site] = await Promise.all([
     getSettingsMap([
       "announcement", "supportQQ", "supportWechat", "supportEmail", "supportTelegram",
       "promo_min_withdraw_cents", "promo_commission_rate", "promo_invite_ttl_days", "promo_max_price_codes",
+      "siteName", "siteSlogan", "siteTagline", "seoDescription", "seoKeywords", "siteLogo", "siteIcon", "siteOgImage",
     ]),
     getMailStatus(),
+    getSiteConfig(),
   ]);
+  const siteNameValue = settings.siteName || site.name;
+  const siteSloganValue = settings.siteSlogan || site.slogan;
+  const siteTaglineValue = settings.siteTagline || site.tagline;
+  const siteLogoValue = settings.siteLogo ?? "";
+  const siteIconValue = settings.siteIcon || site.iconUrl;
+  const siteOgImageValue = settings.siteOgImage || site.ogImageUrl;
   const promoMin = (Number(settings.promo_min_withdraw_cents ?? "5000") || 5000) / 100;
   const promoRate = Number(settings.promo_commission_rate ?? "100") || 100;
   const promoTtl = Number(settings.promo_invite_ttl_days ?? "30") || 30;
@@ -98,6 +110,11 @@ export default async function AdminSettingsPage({ searchParams }: PageProps<"/ad
           站点设置已保存，前台已同步更新
         </div>
       )}
+      {seoSaved && (
+        <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/[0.07] px-4 py-3 text-xs text-emerald-600 dark:text-emerald-400">
+          品牌与 SEO 设置已保存，前台已同步更新
+        </div>
+      )}
       {password && (
         <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/[0.07] px-4 py-3 text-xs text-emerald-600 dark:text-emerald-400">
           密码已更新，下次登录请使用新密码
@@ -129,6 +146,147 @@ export default async function AdminSettingsPage({ searchParams }: PageProps<"/ad
 
       <div className="grid gap-3 xl:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]">
         <div className="space-y-4">
+          <section id="seo" className="rounded-2xl border border-foreground/[0.07] bg-background/70 p-4 backdrop-blur sm:p-5">
+            <div className="flex items-start gap-3">
+              <span className="grid size-8 place-items-center rounded-lg bg-brand/10 text-brand">
+                <Search className="size-4" />
+              </span>
+              <div>
+                <h3 className="text-sm font-semibold">品牌与 SEO</h3>
+                <p className="mt-0.5 text-[13px] text-muted-foreground">
+                  站点名称、副标题、Logo、浏览器图标与分享图；留空的图片会使用当前默认样式。
+                </p>
+              </div>
+            </div>
+
+            <form action={saveSeoSettingsAction} className="mt-4 space-y-4">
+              <div className="grid gap-3 sm:grid-cols-2">
+                <label className="block">
+                  <span className="mb-1.5 block text-xs font-medium">
+                    站点名称 <span className="text-rose-500">*</span>
+                  </span>
+                  <input
+                    name="siteName"
+                    required
+                    maxLength={40}
+                    defaultValue={siteNameValue}
+                    placeholder="灵搜小店"
+                    className="h-9 w-full rounded-lg border border-foreground/10 bg-background px-3 text-xs outline-none transition placeholder:text-muted-foreground/50 focus:border-transparent focus:ring-[1.5px] focus:ring-brand"
+                  />
+                  <span className="mt-1 block text-[12px] text-muted-foreground">用于浏览器标题、Logo 旁名称和邮件署名</span>
+                </label>
+                <label className="block">
+                  <span className="mb-1.5 block text-xs font-medium">
+                    站点副标题 <span className="text-rose-500">*</span>
+                  </span>
+                  <input
+                    name="siteSlogan"
+                    required
+                    maxLength={60}
+                    defaultValue={siteSloganValue}
+                    placeholder="精选 AI 账号与订阅服务"
+                    className="h-9 w-full rounded-lg border border-foreground/10 bg-background px-3 text-xs outline-none transition placeholder:text-muted-foreground/50 focus:border-transparent focus:ring-[1.5px] focus:ring-brand"
+                  />
+                  <span className="mt-1 block text-[12px] text-muted-foreground">显示在站点名称后，例如「灵搜小店 · 精选 AI 账号与订阅服务」</span>
+                </label>
+                <label className="block sm:col-span-2">
+                  <span className="mb-1.5 block text-xs font-medium">补充说明</span>
+                  <input
+                    name="siteTagline"
+                    maxLength={120}
+                    defaultValue={siteTaglineValue}
+                    placeholder="付款即发货 · 交付内容随时可查"
+                    className="h-9 w-full rounded-lg border border-foreground/10 bg-background px-3 text-xs outline-none transition placeholder:text-muted-foreground/50 focus:border-transparent focus:ring-[1.5px] focus:ring-brand"
+                  />
+                  <span className="mt-1 block text-[12px] text-muted-foreground">用于自动组合 SEO 描述；SEO 描述留空时生效</span>
+                </label>
+              </div>
+
+              <div className="grid gap-4 lg:grid-cols-2">
+                <div>
+                  <span className="mb-2 block text-xs font-medium">站点 Logo</span>
+                  <ImageField
+                    name="siteLogo"
+                    defaultValue={siteLogoValue}
+                    defaultPreviewUrl="/logo.png"
+                    defaultPreviewLabel="默认 Logo"
+                    previewClassName="aspect-square w-full sm:w-28"
+                    imageClassName="size-full object-contain p-2"
+                    uploadLabel="上传 Logo"
+                    hint="建议上传 1:1 图片；留空使用内置矢量 Logo（自动适配日夜间）。"
+                    presets={[]}
+                  />
+                  <div className="mt-2 flex flex-wrap items-center gap-1">
+                    <span className="text-[11px] text-muted-foreground">展示位置</span>
+                    {["顶部导航", "首页主视觉", "页脚", "开通页", "管理后台", "推广卡片"].map((position) => (
+                      <span key={position} className="rounded-full border border-foreground/10 px-2 py-0.5 text-[10px] text-muted-foreground">
+                        {position}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <span className="mb-2 block text-xs font-medium">站点图标</span>
+                  <ImageField
+                    name="siteIcon"
+                    defaultValue={siteIconValue}
+                    previewClassName="aspect-square w-full sm:w-28"
+                    imageClassName="size-full object-contain p-3"
+                    uploadLabel="上传图标"
+                    hint="浏览器标签页图标，建议 1:1，支持 PNG / SVG / ICO。"
+                    presets={[]}
+                    accept="image/*,.ico"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <span className="mb-2 block text-xs font-medium">社交分享图</span>
+                <ImageField
+                  name="siteOgImage"
+                  defaultValue={siteOgImageValue}
+                  previewClassName="aspect-video w-full sm:w-56"
+                  uploadLabel="上传分享图"
+                  hint="用于微信、社交平台和搜索引擎的分享预览，建议尺寸 1200×630。"
+                  presets={[]}
+                />
+              </div>
+
+              <div className="grid gap-3 sm:grid-cols-2">
+                <label className="block sm:col-span-2">
+                  <span className="mb-1.5 block text-xs font-medium">SEO 描述</span>
+                  <textarea
+                    name="seoDescription"
+                    rows={2}
+                    maxLength={200}
+                    defaultValue={settings.seoDescription ?? ""}
+                    placeholder={site.description}
+                    className="w-full resize-y rounded-xl border border-foreground/10 bg-background px-3 py-2.5 text-xs leading-relaxed outline-none transition placeholder:text-muted-foreground/50 focus:border-transparent focus:ring-[1.5px] focus:ring-brand"
+                  />
+                  <span className="mt-1 block text-[12px] text-muted-foreground">留空时自动使用「副标题，补充说明」</span>
+                </label>
+                <label className="block sm:col-span-2">
+                  <span className="mb-1.5 block text-xs font-medium">SEO 关键词</span>
+                  <input
+                    name="seoKeywords"
+                    maxLength={300}
+                    defaultValue={settings.seoKeywords ?? ""}
+                    placeholder={site.keywords.join("，")}
+                    className="h-9 w-full rounded-lg border border-foreground/10 bg-background px-3 text-xs outline-none transition placeholder:text-muted-foreground/50 focus:border-transparent focus:ring-[1.5px] focus:ring-brand"
+                  />
+                  <span className="mt-1 block text-[12px] text-muted-foreground">多个关键词用逗号分隔；留空使用默认关键词</span>
+                </label>
+              </div>
+
+              <div className="flex justify-end">
+                <SubmitButton pendingText="保存中…">
+                  <Save className="mr-1 size-3.5" />
+                  保存品牌与 SEO
+                </SubmitButton>
+              </div>
+            </form>
+          </section>
+
           <section className="rounded-2xl border border-foreground/[0.07] bg-background/70 p-4 backdrop-blur sm:p-5">
             <div className="flex items-start gap-3">
               <span className="grid size-8 place-items-center rounded-lg bg-brand/10 text-brand">
@@ -314,7 +472,7 @@ export default async function AdminSettingsPage({ searchParams }: PageProps<"/ad
                     name="mailFrom"
                     defaultValue={mail.from}
                     maxLength={255}
-                    placeholder="灵搜小店 <postmaster@example.com>"
+                    placeholder={`${site.name} <postmaster@example.com>`}
                     className="h-9 w-full rounded-lg border border-foreground/10 bg-background px-3 text-xs outline-none transition placeholder:text-muted-foreground/50 focus:border-transparent focus:ring-[1.5px] focus:ring-brand"
                   />
                 </label>

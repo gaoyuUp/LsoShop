@@ -2,15 +2,14 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { connection } from "next/server";
 import { ProductDetailView } from "@/components/site/product-detail-view";
-import { getDictionary } from "@/i18n";
 import { getProductBySlug } from "@/lib/catalog";
 import { getAgentContext } from "@/lib/agent-context";
-import { absoluteUrl, defaultOgImage, plainText, serializeJsonLd, siteUrl } from "@/lib/seo";
+import { absoluteUrl, plainText, serializeJsonLd, siteUrl } from "@/lib/seo";
+import { getSiteConfig } from "@/lib/site-config";
 
 export async function generateMetadata({ params }: PageProps<"/products/[slug]">): Promise<Metadata> {
   const { slug } = await params;
-  const t = getDictionary();
-  const product = await getProductBySlug(slug);
+  const [product, site] = await Promise.all([getProductBySlug(slug), getSiteConfig()]);
 
   if (!product) {
     return {
@@ -22,27 +21,30 @@ export async function generateMetadata({ params }: PageProps<"/products/[slug]">
   const url = absoluteUrl(`/products/${product.slug}`);
   const description = plainText(
     product.description || product.subtitle,
-    `${product.name}，${t.brand.slogan}，支付宝付款后自动发货。`,
+    `${product.name}，${site.slogan}，支付宝付款后自动发货。`,
   );
-  const image = { ...defaultOgImage, alt: `${product.name} · ${t.brand.name}` };
+  const image = { url: site.ogImageUrl, width: 1200, height: 630, alt: `${product.name} · ${site.name}` };
+  const keywords = Array.from(
+    new Set([product.name, product.categoryName, site.name, "AI 账号", "自动发货", ...site.customKeywords]),
+  );
 
   return {
     title: product.name,
     description,
-    keywords: [product.name, product.categoryName, t.brand.name, "AI 账号", "自动发货"],
+    keywords,
     alternates: { canonical: url },
     openGraph: {
       type: "website",
       locale: "zh_CN",
       url,
-      siteName: t.brand.name,
-      title: `${product.name} · ${t.brand.name}`,
+      siteName: site.name,
+      title: `${product.name} · ${site.name}`,
       description,
       images: [image],
     },
     twitter: {
       card: "summary_large_image",
-      title: `${product.name} · ${t.brand.name}`,
+      title: `${product.name} · ${site.name}`,
       description,
       images: [image.url],
     },
@@ -52,20 +54,19 @@ export async function generateMetadata({ params }: PageProps<"/products/[slug]">
 export default async function ProductPage({ params }: PageProps<"/products/[slug]">) {
   await connection();
   const { slug } = await params;
-  const ctx = await getAgentContext();
+  const [ctx, site] = await Promise.all([getAgentContext(), getSiteConfig()]);
   const agent = ctx.affiliateId ? { affiliateId: ctx.affiliateId, priceCodeId: ctx.priceCodeId } : undefined;
   const product = await getProductBySlug(slug, agent);
   if (!product) notFound();
-  const t = getDictionary();
 
   const url = absoluteUrl(`/products/${product.slug}`);
   const description = plainText(
     product.description || product.subtitle,
-    `${product.name}，${t.brand.slogan}。`,
+    `${product.name}，${site.slogan}。`,
     300,
   );
   const prices = product.variants.map((variant) => variant.priceCents);
-  const imageUrl = product.image ? absoluteUrl(product.image) : absoluteUrl("/og-image.png");
+  const imageUrl = product.image ? absoluteUrl(product.image) : absoluteUrl(site.ogImageUrl);
   const availability =
     product.totalStock === 0
       ? "https://schema.org/OutOfStock"
@@ -82,7 +83,7 @@ export default async function ProductPage({ params }: PageProps<"/products/[slug
         image: [imageUrl],
         sku: product.slug,
         category: product.categoryName,
-        brand: { "@type": "Brand", name: t.brand.name },
+        brand: { "@type": "Brand", name: site.name },
         offers:
           prices.length > 0
             ? {
@@ -93,7 +94,7 @@ export default async function ProductPage({ params }: PageProps<"/products/[slug
                 offerCount: prices.length,
                 availability,
                 url,
-                seller: { "@type": "Organization", name: t.brand.name, url: siteUrl },
+                seller: { "@type": "Organization", name: site.name, url: siteUrl },
               }
             : undefined,
       },

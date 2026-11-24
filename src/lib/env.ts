@@ -13,6 +13,6 @@ export const env = {
     secure: (process.env.MAIL_SECURE || process.env.SMTP_SECURE || "true") === "true",
     user: process.env.MAIL_USER || process.env.SMTP_USER || "",
     pass: process.env.MAIL_PASSWORD || process.env.SMTP_PASS || "",
-    from: process.env.MAIL_FROM || "灵搜小店 <no-reply@example.com>",
+    from: process.env.MAIL_FROM || "",
   },
 };

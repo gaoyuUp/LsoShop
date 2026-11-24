@@ -2,6 +2,7 @@ import "server-only";
 import nodemailer from "nodemailer";
 import { db, schema } from "@/db";
 import { env } from "@/lib/env";
+import { getSiteConfig } from "@/lib/site-config";
 import { getMailConfig } from "./config";
 
 type SendInput = { to: string; subject: string; html: string; orderId?: number; /** 是否写入后台邮件记录 */ log?: boolean };
@@ -15,7 +16,7 @@ export type SendResult = "sent" | "failed" | "skipped";
 export async function sendMail({ to, subject, html, orderId, log = true }: SendInput): Promise<SendResult> {
   let status: SendResult = "skipped";
   let error = "";
-  const config = await getMailConfig();
+  const [config, site] = await Promise.all([getMailConfig(), getSiteConfig()]);
 
   if (!config.enabled) {
     error = "邮箱服务未启用或配置不完整";
@@ -30,7 +31,7 @@ export async function sendMail({ to, subject, html, orderId, log = true }: SendI
         greetingTimeout: 12_000,
         socketTimeout: 30_000,
       });
-      const from = config.from.includes("<") ? config.from : `灵搜小店 <${config.from}>`;
+      const from = config.from.includes("<") ? config.from : `${site.name} <${config.from}>`;
       const info = await transporter.sendMail({ from, to, subject, html });
       status = info.accepted && info.accepted.length > 0 ? "sent" : "failed";
       if (status === "failed") error = "SMTP 未接受该收件人，请检查发件域限制";
@@ -51,6 +52,7 @@ const esc = (s: string) =>
   s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 
 export function deliveryEmailHtml(input: {
+  brandName: string;
   orderNo: string;
   productName: string;
   variantName: string;
@@ -67,7 +69,7 @@ export function deliveryEmailHtml(input: {
     .join("");
   return `<!doctype html><html><body style="margin:0;background:#f4f4f6;padding:32px 12px;font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Microsoft YaHei',sans-serif">
   <div style="max-width:560px;margin:0 auto;background:#fff;border-radius:20px;padding:32px;border:1px solid #ececf0">
-    <div style="font-size:20px;font-weight:600;color:#18181b">灵搜小店 · 发货通知</div>
+    <div style="font-size:20px;font-weight:600;color:#18181b">${esc(input.brandName)} · 发货通知</div>
     <p style="color:#52525b;font-size:14px;line-height:1.7">您购买的 <b>${esc(input.productName)}</b>（${esc(input.variantName)} × ${input.quantity}）已发货，交付内容如下：</p>
     ${blocks}
     <p style="color:#71717a;font-size:13px;line-height:1.7">订单号：${esc(input.orderNo)}<br/>查询订单：订单号 + 本邮箱地址（或订单号 + 查询口令）。<br/>也可以随时在 <a href="${env.siteUrl}/orders" style="color:#6d4aff">我的订单</a> 中查看。请妥善保管，切勿泄露给他人。</p>

@@ -4,7 +4,34 @@ import { useRef, useState } from "react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
-export function ImageField({ name, defaultValue = "" }: { name: string; defaultValue?: string }) {
+const DEFAULT_PRESETS = [
+  { label: "示例 · Muse", value: "/products/muse.svg" },
+  { label: "示例 · GPT Plus", value: "/products/plus-japan.svg" },
+];
+
+export function ImageField({
+  name,
+  defaultValue = "",
+  previewClassName = "aspect-[4/3] w-full sm:w-40",
+  imageClassName = "size-full object-cover",
+  uploadLabel = "上传商品图",
+  hint = "支持 PNG / JPG / WEBP / GIF / SVG，单张不超过 5MB。上传后保存在服务器 storage 目录，方便随数据库一起备份。",
+  presets = DEFAULT_PRESETS,
+  accept = "image/*",
+  defaultPreviewUrl = "",
+  defaultPreviewLabel = "默认",
+}: {
+  name: string;
+  defaultValue?: string;
+  previewClassName?: string;
+  imageClassName?: string;
+  uploadLabel?: string;
+  hint?: string;
+  presets?: { label: string; value: string }[];
+  accept?: string;
+  defaultPreviewUrl?: string;
+  defaultPreviewLabel?: string;
+}) {
   const [value, setValue] = useState(defaultValue);
   const [uploading, setUploading] = useState(false);
   const [dragging, setDragging] = useState(false);
@@ -46,14 +73,15 @@ export function ImageField({ name, defaultValue = "" }: { name: string; defaultV
             if (f) void upload(f);
           }}
           className={cn(
-            "relative flex aspect-[4/3] w-full shrink-0 flex-col items-center justify-center overflow-hidden rounded-xl border border-dashed transition sm:w-40",
+            "relative flex shrink-0 flex-col items-center justify-center overflow-hidden rounded-xl border border-dashed transition",
+            previewClassName,
             dragging ? "border-brand bg-brand/[0.06]" : "border-foreground/15 bg-foreground/[0.02]",
           )}
         >
           {value ? (
             <>
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={value} alt="商品图预览" className="size-full object-cover" />
+              <img src={value} alt="图片预览" className={imageClassName} />
               <button
                 type="button"
                 onClick={() => setValue("")}
@@ -63,6 +91,22 @@ export function ImageField({ name, defaultValue = "" }: { name: string; defaultV
                 <X className="size-3" />
               </button>
             </>
+          ) : defaultPreviewUrl ? (
+            <button
+              type="button"
+              onClick={() => inputRef.current?.click()}
+              className="group relative grid size-full place-items-center overflow-hidden bg-white/90"
+              aria-label="上传替换默认图片"
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={defaultPreviewUrl} alt="默认图片预览" className={imageClassName} />
+              <span className="absolute left-1.5 top-1.5 rounded-full bg-black/55 px-2 py-0.5 text-[10px] font-medium text-white backdrop-blur">
+                {defaultPreviewLabel}
+              </span>
+              <span className="absolute inset-x-0 bottom-0 bg-black/45 py-1 text-center text-[11px] text-white opacity-0 backdrop-blur transition group-hover:opacity-100">
+                点击上传替换
+              </span>
+            </button>
           ) : (
             <button
               type="button"
@@ -70,7 +114,7 @@ export function ImageField({ name, defaultValue = "" }: { name: string; defaultV
               className="flex size-full flex-col items-center justify-center gap-2 text-muted-foreground transition hover:text-foreground"
             >
               {uploading ? <Loader2 className="size-5 animate-spin" /> : <ImagePlus className="size-6" />}
-              <span className="text-[13px]">{uploading ? "上传中…" : "上传商品图"}</span>
+              <span className="text-[13px]">{uploading ? "上传中…" : uploadLabel}</span>
               <span className="text-[12px] text-muted-foreground/70">或拖拽图片到这里</span>
             </button>
           )}
@@ -81,8 +125,11 @@ export function ImageField({ name, defaultValue = "" }: { name: string; defaultV
             <div className="relative flex-1">
               <Link2 className="pointer-events-none absolute left-3 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
               <input
-                value={value}
+                value={value || defaultPreviewUrl}
                 onChange={(e) => setValue(e.target.value)}
+                onFocus={(e) => {
+                  if (!value && defaultPreviewUrl) e.currentTarget.select();
+                }}
                 placeholder="/products/xxx.svg 或 https://…"
                 className="h-9 w-full rounded-lg border border-foreground/10 bg-background pl-9 pr-3 font-mono text-[13px] outline-none transition focus:border-transparent focus:ring-[1.5px] focus:ring-brand"
               />
@@ -97,14 +144,9 @@ export function ImageField({ name, defaultValue = "" }: { name: string; defaultV
               上传
             </button>
           </div>
-          <p className="text-[12px] leading-relaxed text-muted-foreground">
-            支持 PNG / JPG / WEBP / GIF / SVG，单张不超过 5MB。上传后保存在服务器 storage 目录，方便随数据库一起备份。
-          </p>
-          <div className="mt-auto flex flex-wrap gap-1.5">
-            {[
-              { label: "示例 · Muse", value: "/products/muse.svg" },
-              { label: "示例 · GPT Plus", value: "/products/plus-japan.svg" },
-            ].map((preset) => (
+          <p className="text-[12px] leading-relaxed text-muted-foreground">{hint}</p>
+          {presets.length > 0 && <div className="mt-auto flex flex-wrap gap-1.5">
+            {presets.map((preset) => (
               <button
                 key={preset.value}
                 type="button"
@@ -114,13 +156,13 @@ export function ImageField({ name, defaultValue = "" }: { name: string; defaultV
                 {preset.label}
               </button>
             ))}
-          </div>
+          </div>}
         </div>
       </div>
       <input
         ref={inputRef}
         type="file"
-        accept="image/*"
+        accept={accept}
         className="hidden"
         onChange={(e) => {
           const f = e.target.files?.[0];

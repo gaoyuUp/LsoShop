@@ -13,6 +13,8 @@ const EXT: Record<string, string> = {
   "image/gif": ".gif",
   "image/avif": ".avif",
   "image/svg+xml": ".svg",
+  "image/x-icon": ".ico",
+  "image/vnd.microsoft.icon": ".ico",
 };
 
 export async function POST(req: Request) {
@@ -26,7 +28,7 @@ export async function POST(req: Request) {
   if (file.size > MAX) return json({ error: "图片不能超过 5MB" }, 400);
 
   const ext = EXT[file.type];
-  if (!ext) return json({ error: "仅支持 PNG / JPG / WEBP / GIF / AVIF / SVG" }, 400);
+  if (!ext) return json({ error: "仅支持 PNG / JPG / WEBP / GIF / AVIF / SVG / ICO" }, 400);
 
   const now = new Date();
   const relDir = `${now.getUTCFullYear()}/${String(now.getUTCMonth() + 1).padStart(2, "0")}`;

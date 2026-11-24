@@ -5,11 +5,11 @@ import { Hero } from "@/components/site/hero";
 import { AgentProductGrid } from "@/components/site/agent-product-grid";
 import { getDictionary } from "@/i18n";
 import { getAgentShop } from "@/lib/affiliate";
+import { getSiteConfig } from "@/lib/site-config";
 
 export async function generateMetadata({ params }: PageProps<"/r/[code]">): Promise<Metadata> {
   const { code } = await params;
-  const t = getDictionary();
-  const shop = await getAgentShop(code);
+  const [shop, site] = await Promise.all([getAgentShop(code), getSiteConfig()]);
   if ("invalid" in shop) {
     return {
       title: "推广链接无效",
@@ -18,7 +18,7 @@ export async function generateMetadata({ params }: PageProps<"/r/[code]">): Prom
   }
   return {
     title: "专属价",
-    description: `${t.brand.slogan}，本链接展示推广人专属价格`,
+    description: `${site.slogan}，本链接展示推广人专属价格`,
     robots: { index: false, follow: false, nocache: true },
   };
 }
@@ -32,7 +32,7 @@ export default async function AgentShopPage({ params, searchParams }: PageProps<
   // 价位码参数；渠道 src 由 layout 的访问埋点读取
   const pc = typeof sp.pc === "string" ? sp.pc : "";
 
-  const shop = await getAgentShop(code, pc || undefined);
+  const [shop, site] = await Promise.all([getAgentShop(code, pc || undefined), getSiteConfig()]);
   if ("invalid" in shop) {
     // 无效码不产生归属；getAgentContext / 下单接口都会再次校验，不会算到错误代理
     const reason = shop.reason === "disabled" ? t.agent.disabledCode : t.agent.invalidCode;
@@ -56,7 +56,7 @@ export default async function AgentShopPage({ params, searchParams }: PageProps<
 
   return (
     <>
-      <Hero announcement={""} />
+      <Hero announcement={""} logoUrl={site.logoUrl} />
       <div className="mx-auto max-w-6xl px-4 sm:px-6">
         <div className="mb-4 flex items-center gap-2 rounded-2xl border border-brand/15 bg-brand/[0.05] px-4 py-2.5 text-xs text-brand">
           <span className="size-1.5 rounded-full bg-brand" />

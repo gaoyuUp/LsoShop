@@ -18,13 +18,26 @@ export function LogoMark({ className, animated = false }: { className?: string; 
   );
 }
 
-export function Wordmark({ className }: { className?: string }) {
+export function Wordmark({
+  className,
+  name = "灵搜小店",
+  logoUrl,
+}: {
+  className?: string;
+  name?: string;
+  logoUrl?: string;
+}) {
   return (
     <span className={cn("inline-flex items-center gap-2", className)}>
-      <span className="relative grid size-8 place-items-center rounded-[10px] bg-foreground text-background shadow-sm">
-        <LogoMark className="size-6" />
-      </span>
-      <span className="hidden text-[15px] font-semibold tracking-tight sm:inline">灵搜小店</span>
+      {logoUrl ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={logoUrl} alt={name} className="size-8 shrink-0 rounded-[10px] object-contain" />
+      ) : (
+        <span className="relative grid size-8 shrink-0 place-items-center rounded-[10px] bg-foreground text-background shadow-sm">
+          <LogoMark className="size-6" />
+        </span>
+      )}
+      <span className="hidden text-[15px] font-semibold tracking-tight sm:inline">{name}</span>
     </span>
   );
 }

@@ -6,17 +6,21 @@ import { JoinForm } from "@/components/join/join-form";
 import { LogoMark } from "@/components/site/logo";
 import { getDictionary } from "@/i18n";
 import { getCurrentAffiliate } from "@/lib/auth/affiliate-server";
+import { getSiteConfig } from "@/lib/site-config";
 
-export const metadata: Metadata = {
-  title: "代理开通",
-  description: "使用邀请码开通灵搜小店代理账号，通过邮箱验证码登录推广后台。",
-  robots: { index: false, follow: false, nocache: true },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const site = await getSiteConfig();
+  return {
+    title: "代理开通",
+    description: `使用邀请码开通${site.name}代理账号，通过邮箱验证码登录推广后台。`,
+    robots: { index: false, follow: false, nocache: true },
+  };
+}
 
 export default async function JoinPage({ searchParams }: PageProps<"/join">) {
   const current = await getCurrentAffiliate();
   if (current) redirect("/");
-  const sp = await searchParams;
+  const [sp, site] = await Promise.all([searchParams, getSiteConfig()]);
   const invite = typeof sp.invite === "string" ? sp.invite.toUpperCase() : "";
   const initialMode = sp.login === "1" ? "login" : "activate";
   const t = getDictionary();
@@ -39,10 +43,15 @@ export default async function JoinPage({ searchParams }: PageProps<"/join">) {
 
       <header className="relative z-10 mx-auto flex h-20 max-w-6xl items-center justify-between px-5 sm:px-8">
         <Link href="/" className="inline-flex items-center gap-2.5">
-          <span className="grid size-9 place-items-center rounded-xl bg-foreground text-background">
-            <LogoMark className="size-7" />
-          </span>
-          <span className="text-sm font-semibold tracking-tight">{t.brand.name}</span>
+          {site.logoUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={site.logoUrl} alt={site.name} className="size-9 shrink-0 rounded-xl object-contain" />
+          ) : (
+            <span className="grid size-9 place-items-center rounded-xl bg-foreground text-background">
+              <LogoMark className="size-7" />
+            </span>
+          )}
+          <span className="text-sm font-semibold tracking-tight">{site.name}</span>
         </Link>
         <Link href="/" className="inline-flex items-center gap-1.5 text-xs text-muted-foreground transition hover:text-foreground">
           <ArrowLeft className="size-3.5" />
@@ -75,9 +84,14 @@ export default async function JoinPage({ searchParams }: PageProps<"/join">) {
               </span>
             </div>
             <div className="mt-4 flex items-center gap-3">
-              <span className="grid size-11 place-items-center rounded-2xl bg-foreground text-background">
-                <LogoMark className="size-8" />
-              </span>
+              {site.logoUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={site.logoUrl} alt={site.name} className="size-11 shrink-0 rounded-2xl object-contain" />
+              ) : (
+                <span className="grid size-11 place-items-center rounded-2xl bg-foreground text-background">
+                  <LogoMark className="size-8" />
+                </span>
+              )}
               <div>
                 <div className="text-sm font-semibold">你的专属代理</div>
                 <div className="mt-0.5 font-mono text-[11px] text-muted-foreground">/r/XXXXXX</div>

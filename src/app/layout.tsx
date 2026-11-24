@@ -2,49 +2,57 @@ import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
-import { defaultLocale, getDictionary } from "@/i18n";
+import { defaultLocale } from "@/i18n";
 import { I18nProvider } from "@/i18n/provider";
-import { defaultOgImage, isIndexable, siteUrl } from "@/lib/seo";
+import { isIndexable, siteUrl } from "@/lib/seo";
+import { getSiteConfig } from "@/lib/site-config";
 import "./globals.css";
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
 
-const t = getDictionary();
-const siteTitle = `${t.brand.name} · ${t.brand.slogan}`;
-const siteDescription = `${t.brand.slogan}，${t.brand.tagline}。`;
+export async function generateMetadata(): Promise<Metadata> {
+  const site = await getSiteConfig();
+  const siteTitle = `${site.name} · ${site.slogan}`;
+  const ogImage = { url: site.ogImageUrl, width: 1200, height: 630, alt: site.ogImageAlt };
 
-export const metadata: Metadata = {
-  title: { default: siteTitle, template: `%s · ${t.brand.name}` },
-  description: siteDescription,
-  metadataBase: new URL(siteUrl),
-  applicationName: t.brand.name,
-  authors: [{ name: t.brand.name }],
-  creator: t.brand.name,
-  publisher: t.brand.name,
-  category: "shopping",
-  keywords: ["灵搜小店", "Muse AI", "GPT Plus", "ChatGPT Plus", "AI 账号", "成品账号", "订阅服务"],
-  // 本地开发不收录；线上换成正式域名后自动允许搜索引擎收录
-  robots: isIndexable
-    ? { index: true, follow: true }
-    : { index: false, follow: false, nocache: true },
-  openGraph: {
-    type: "website",
-    locale: "zh_CN",
-    url: siteUrl,
-    siteName: t.brand.name,
-    title: siteTitle,
-    description: siteDescription,
-    images: [defaultOgImage],
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: siteTitle,
-    description: siteDescription,
-    images: [defaultOgImage.url],
-  },
-  formatDetection: { email: false, address: false, telephone: false },
-};
+  return {
+    title: { default: siteTitle, template: `%s · ${site.name}` },
+    description: site.description,
+    metadataBase: new URL(siteUrl),
+    applicationName: site.name,
+    authors: [{ name: site.name }],
+    creator: site.name,
+    publisher: site.name,
+    category: "shopping",
+    keywords: site.keywords,
+    // 本地开发不收录；线上换成正式域名后自动允许搜索引擎收录
+    robots: isIndexable
+      ? { index: true, follow: true }
+      : { index: false, follow: false, nocache: true },
+    icons: {
+      icon: [{ url: site.iconUrl }],
+      shortcut: [{ url: site.iconUrl }],
+      ...(site.iconUrl.endsWith(".svg") ? {} : { apple: [{ url: site.iconUrl }] }),
+    },
+    openGraph: {
+      type: "website",
+      locale: "zh_CN",
+      url: siteUrl,
+      siteName: site.name,
+      title: siteTitle,
+      description: site.description,
+      images: [ogImage],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: siteTitle,
+      description: site.description,
+      images: [ogImage.url],
+    },
+    formatDetection: { email: false, address: false, telephone: false },
+  };
+}
 
 export const viewport: Viewport = {
   themeColor: [

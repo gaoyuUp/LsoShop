@@ -94,19 +94,56 @@
       const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
       let index = Math.max(0, cards.findIndex((c) => c.classList.contains('is-active')));
       let timer = 0;
-      const stop = () => { if (timer) { clearInterval(timer); timer = 0; } };
-      const start = () => {
-        if (reduce) return;
+      let resumeTimer = 0;
+      let lastAdvance = 0;
+      const stop = () => {
+        if (timer) { clearTimeout(timer); timer = 0; }
+      };
+      const syncIndex = () => {
+        const current = cards.findIndex((c) => c.classList.contains('is-active'));
+        if (current >= 0) index = current;
+      };
+      const schedule = () => {
         stop();
-        timer = setInterval(() => {
-          index = (index + 1) % cards.length;
-          cards[index].click();
+        if (reduce || document.hidden) return;
+        timer = window.setTimeout(() => {
+          timer = 0;
+          if (document.hidden) return;
+          const now = performance.now();
+          // Avoid a burst of queued advances when returning to the tab.
+          if (now - lastAdvance >= 1200) {
+            lastAdvance = now;
+            index = (index + 1) % cards.length;
+            cards[index].click();
+          }
+          schedule();
         }, 4600);
       };
-      stage.addEventListener('mouseenter', stop);
-      stage.addEventListener('mouseleave', start);
-      stage.addEventListener('focusin', stop);
-      window.addEventListener('pagehide', stop, { once: true });
-      start();
+      const pause = () => {
+        stop();
+        if (resumeTimer) { clearTimeout(resumeTimer); resumeTimer = 0; }
+      };
+      const resume = () => {
+        if (document.hidden) return;
+        pause();
+        syncIndex();
+        // Let the WebGL scene settle after the page becomes visible again.
+        resumeTimer = window.setTimeout(() => {
+          resumeTimer = 0;
+          schedule();
+        }, 900);
+      };
+      stage.addEventListener('mouseenter', pause);
+      stage.addEventListener('mouseleave', resume);
+      stage.addEventListener('focusin', pause);
+      document.addEventListener('visibilitychange', () => {
+        if (document.hidden) pause(); else resume();
+      });
+      window.addEventListener('message', (event) => {
+        if (event.data?.type !== 'lso-carousel-visibility') return;
+        if (event.data.visible) resume(); else pause();
+      });
+      window.addEventListener('pagehide', pause, { once: true });
+      lastAdvance = performance.now();
     })();
   </script></body></html>

@@ -16,9 +16,13 @@ import { SupportMenu } from "./support-menu";
 export function SiteHeader({
   support,
   agent,
+  siteName,
+  logoUrl,
 }: {
   support: SupportContacts;
   agent?: { code: string; email: string; nickname: string } | null;
+  siteName: string;
+  logoUrl?: string;
 }) {
   const t = useT();
   const pathname = usePathname();
@@ -41,7 +45,7 @@ export function SiteHeader({
         )}
       >
         <Link href="/" className="rounded-xl outline-offset-4">
-          <Wordmark />
+          <Wordmark name={siteName} logoUrl={logoUrl} />
         </Link>
 
         <nav className="flex min-w-0 items-center gap-0.5 sm:gap-1">

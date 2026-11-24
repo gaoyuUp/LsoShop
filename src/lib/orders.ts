@@ -6,6 +6,7 @@ import { db, schema } from "@/db";
 import { env } from "@/lib/env";
 import { deliveryEmailHtml, sendMail } from "@/lib/mail";
 import { getPaymentProvider, isMockPayment } from "@/lib/payment";
+import { getSiteConfig } from "@/lib/site-config";
 
 const { orders, inventoryItems, products, productVariants, customerEntitlements } = schema;
 
@@ -356,13 +357,21 @@ export async function manualDeliver(orderId: number, content: string, notify = t
 }
 
 export async function sendDeliveryEmail(orderId: number) {
-  const [order] = await db.select().from(orders).where(eq(orders.id, orderId));
+  const [order, site] = await Promise.all([
+    db
+      .select()
+      .from(orders)
+      .where(eq(orders.id, orderId))
+      .then((rows) => rows[0]),
+    getSiteConfig(),
+  ]);
   if (!order || !order.email || !order.deliveryContent) return null;
   const status = await sendMail({
     to: order.email,
     orderId: order.id,
-    subject: `【灵搜小店】订单 ${order.orderNo} 已发货`,
+    subject: `【${site.name}】订单 ${order.orderNo} 已发货`,
     html: deliveryEmailHtml({
+      brandName: site.name,
       orderNo: order.orderNo,
       productName: order.productName,
       variantName: order.variantName,

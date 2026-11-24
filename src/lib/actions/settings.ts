@@ -8,6 +8,7 @@ import { requireAdmin } from "@/lib/auth/admin";
 import { encryptSecret } from "@/lib/crypto";
 import { sendMail } from "@/lib/mail";
 import { getMailConfig } from "@/lib/mail/config";
+import { getSiteConfig } from "@/lib/site-config";
 
 const { settings, admins } = schema;
 
@@ -38,6 +39,42 @@ export async function saveSettingsAction(fd: FormData) {
   revalidatePath("/orders");
   revalidatePath("/admin/settings");
   backTo({ saved: "1" });
+}
+
+function isAssetUrl(value: string) {
+  if (!value) return true;
+  if (value.startsWith("/") && !value.startsWith("//")) return true;
+  try {
+    const url = new URL(value);
+    return url.protocol === "http:" || url.protocol === "https:";
+  } catch {
+    return false;
+  }
+}
+
+export async function saveSeoSettingsAction(fd: FormData) {
+  await requireAdmin();
+  const values: Record<string, string> = {
+    siteName: String(fd.get("siteName") ?? "").trim().slice(0, 40),
+    siteSlogan: String(fd.get("siteSlogan") ?? "").trim().slice(0, 60),
+    siteTagline: String(fd.get("siteTagline") ?? "").trim().slice(0, 120),
+    seoDescription: String(fd.get("seoDescription") ?? "").trim().slice(0, 200),
+    seoKeywords: String(fd.get("seoKeywords") ?? "").trim().slice(0, 300),
+    siteLogo: String(fd.get("siteLogo") ?? "").trim().slice(0, 512),
+    siteIcon: String(fd.get("siteIcon") ?? "").trim().slice(0, 512),
+    siteOgImage: String(fd.get("siteOgImage") ?? "").trim().slice(0, 512),
+  };
+
+  if (!values.siteName) backTo({ error: "站点名称不能为空" });
+  if (!values.siteSlogan) backTo({ error: "站点副标题不能为空" });
+  if (!isAssetUrl(values.siteLogo)) backTo({ error: "Logo 地址格式不正确" });
+  if (!isAssetUrl(values.siteIcon)) backTo({ error: "站点图标地址格式不正确" });
+  if (!isAssetUrl(values.siteOgImage)) backTo({ error: "分享图地址格式不正确" });
+
+  await upsertSettings(values);
+  revalidatePath("/", "layout");
+  revalidatePath("/admin/settings");
+  backTo({ seoSaved: "1" });
 }
 
 export async function changePasswordAction(fd: FormData) {
@@ -106,13 +143,14 @@ export async function sendTestMailAction(fd: FormData) {
   const to = String(fd.get("to") ?? "").trim().slice(0, 191);
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(to)) backTo({ error: "请填写正确的测试收件邮箱" });
 
+  const site = await getSiteConfig();
   const result = await sendMail({
     to,
-    subject: "【灵搜小店】SMTP 配置测试",
+    subject: `【${site.name}】SMTP 配置测试`,
     html: `<!doctype html><html><body style="margin:0;background:#f4f4f6;padding:32px 12px;font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Microsoft YaHei',sans-serif">
       <div style="max-width:560px;margin:0 auto;background:#fff;border-radius:20px;padding:32px;border:1px solid #ececf0">
-        <div style="font-size:20px;font-weight:600;color:#18181b">灵搜小店 · 邮件测试</div>
-        <p style="color:#52525b;font-size:14px;line-height:1.8">这是一封来自灵搜小店后台的 SMTP 测试邮件。</p>
+        <div style="font-size:20px;font-weight:600;color:#18181b">${site.name} · 邮件测试</div>
+        <p style="color:#52525b;font-size:14px;line-height:1.8">这是一封来自${site.name}后台的 SMTP 测试邮件。</p>
         <p style="color:#52525b;font-size:14px;line-height:1.8">如果你收到了它，说明发件配置已经生效，订单交付邮件会正常发送。</p>
         <p style="color:#a1a1aa;font-size:12px;margin-top:24px">测试时间：${new Date().toLocaleString("zh-CN", { timeZone: "Asia/Shanghai" })}</p>
       </div></body></html>`,

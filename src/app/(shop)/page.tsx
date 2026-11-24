@@ -6,39 +6,46 @@ import { ProductGrid } from "@/components/site/product-grid";
 import { getDictionary } from "@/i18n";
 import { getListedProducts, getSetting } from "@/lib/catalog";
 import { getAgentContext } from "@/lib/agent-context";
-import { absoluteUrl, defaultOgImage, serializeJsonLd } from "@/lib/seo";
+import { absoluteUrl, serializeJsonLd } from "@/lib/seo";
+import { getSiteConfig } from "@/lib/site-config";
 
 const t = getDictionary();
-const homeTitle = `${t.brand.name} · ${t.brand.slogan}`;
-const homeDescription = `${t.home.title1}${t.home.title2}${t.home.desc}`;
+const DEFAULT_HOME_KEYWORDS = ["Muse AI", "GPT Plus", "ChatGPT Plus", "AI 成品账号", "AI 订阅服务", "自动发货"];
 
-export const metadata: Metadata = {
-  title: { absolute: homeTitle },
-  description: homeDescription,
-  alternates: { canonical: "/" },
-  keywords: ["Muse AI", "GPT Plus", "ChatGPT Plus", "AI 成品账号", "AI 订阅服务", "自动发货"],
-  openGraph: {
-    type: "website",
-    locale: "zh_CN",
-    url: "/",
-    siteName: t.brand.name,
-    title: homeTitle,
+export async function generateMetadata(): Promise<Metadata> {
+  const site = await getSiteConfig();
+  const homeTitle = `${site.name} · ${site.slogan}`;
+  const homeDescription = site.customDescription || `${t.home.title1}${t.home.title2}${t.home.desc}`;
+  const ogImage = { url: site.ogImageUrl, width: 1200, height: 630, alt: site.ogImageAlt };
+
+  return {
+    title: { absolute: homeTitle },
     description: homeDescription,
-    images: [defaultOgImage],
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: homeTitle,
-    description: homeDescription,
-    images: [defaultOgImage.url],
-  },
-};
+    alternates: { canonical: "/" },
+    keywords: site.customKeywords.length ? site.customKeywords : DEFAULT_HOME_KEYWORDS,
+    openGraph: {
+      type: "website",
+      locale: "zh_CN",
+      url: "/",
+      siteName: site.name,
+      title: homeTitle,
+      description: homeDescription,
+      images: [ogImage],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: homeTitle,
+      description: homeDescription,
+      images: [ogImage.url],
+    },
+  };
+}
 
 export default async function HomePage() {
   await connection();
   const ctx = await getAgentContext();
   const agent = ctx.affiliateId ? { affiliateId: ctx.affiliateId, priceCodeId: ctx.priceCodeId } : undefined;
-  const [products, announcement] = await Promise.all([getListedProducts(agent), getSetting("announcement")]);
+  const [products, announcement, site] = await Promise.all([getListedProducts(agent), getSetting("announcement"), getSiteConfig()]);
   const itemListJsonLd =
     products.length > 0
       ? serializeJsonLd({
@@ -62,7 +69,7 @@ export default async function HomePage() {
           dangerouslySetInnerHTML={{ __html: itemListJsonLd }}
         />
       )}
-      <Hero announcement={announcement} compact>
+      <Hero announcement={announcement} compact logoUrl={site.logoUrl}>
         <HomeFeaturesEmbed />
       </Hero>
 

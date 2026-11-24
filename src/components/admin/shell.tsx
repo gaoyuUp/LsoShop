@@ -66,11 +66,15 @@ export function AdminShell({
   username,
   defaultCollapsed = false,
   showTestInbox = false,
+  siteName,
+  logoUrl,
   children,
 }: {
   username: string;
   defaultCollapsed?: boolean;
   showTestInbox?: boolean;
+  siteName: string;
+  logoUrl?: string;
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
@@ -114,18 +118,23 @@ export function AdminShell({
       >
         <Link
           href="/admin"
-          title="灵搜小店"
+          title={siteName}
           className={cn(
             "flex items-center transition-all",
             collapsed ? "justify-center px-0 pb-5 pt-6" : "gap-3 px-5 pb-5 pt-6",
           )}
         >
-          <span className="relative grid size-9 shrink-0 place-items-center rounded-xl bg-foreground text-background shadow-sm">
-            <LogoMark className="size-6" />
-          </span>
+          {logoUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={logoUrl} alt={siteName} className="size-9 shrink-0 rounded-xl object-contain" />
+          ) : (
+            <span className="relative grid size-9 shrink-0 place-items-center rounded-xl bg-foreground text-background shadow-sm">
+              <LogoMark className="size-6" />
+            </span>
+          )}
           {!collapsed && (
             <span>
-              <span className="block text-sm font-semibold leading-tight tracking-tight">灵搜小店</span>
+              <span className="block text-sm font-semibold leading-tight tracking-tight">{siteName}</span>
               <span className="mt-0.5 block text-[12px] uppercase tracking-[0.16em] text-muted-foreground">Console</span>
             </span>
           )}
@@ -273,10 +282,15 @@ export function AdminShell({
             >
               <div className="flex items-center justify-between px-3 py-3">
                 <div className="flex items-center gap-2.5">
-                  <span className="grid size-8 place-items-center rounded-[10px] bg-foreground text-background">
-                    <LogoMark className="size-5" />
-                  </span>
-                  <span className="text-sm font-semibold">灵搜小店</span>
+                  {logoUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={logoUrl} alt={siteName} className="size-8 shrink-0 rounded-[10px] object-contain" />
+                  ) : (
+                    <span className="grid size-8 place-items-center rounded-[10px] bg-foreground text-background">
+                      <LogoMark className="size-5" />
+                    </span>
+                  )}
+                  <span className="text-sm font-semibold">{siteName}</span>
                 </div>
                 <button type="button" onClick={() => setOpen(false)} className="grid size-8 place-items-center rounded-lg hover:bg-foreground/[0.06]">
                   <X className="size-4" />

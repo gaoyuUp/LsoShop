@@ -29,6 +29,7 @@ import { requireAffiliate } from "@/lib/auth/affiliate-server";
 import { startOfShanghaiDay } from "@/lib/admin-data";
 import { formatPrice } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import { getSiteConfig } from "@/lib/site-config";
 
 const DAYS = [1, 7, 30, 90] as const;
 const COLORS = { visitors: "#7c5cff", opens: "#2bb8a3", orders: "#f2a93b", paid: "#f25c9d" };
@@ -56,7 +57,7 @@ export default async function PromoteOverviewPage({ searchParams }: PageProps<"/
   const days = (DAYS.includes(Number(sp.days) as (typeof DAYS)[number]) ? Number(sp.days) : 1) as 1 | 7 | 30 | 90;
   const from = startOfShanghaiDay(-(days - 1));
 
-  const [summary, balance, pending, effect, channels, settings, hasVisit] = await Promise.all([
+  const [summary, balance, pending, effect, channels, settings, hasVisit, site] = await Promise.all([
     agentCommissionSummary(agent.id),
     agentBalance(agent.id),
     agentPendingWithdrawal(agent.id),
@@ -64,6 +65,7 @@ export default async function PromoteOverviewPage({ searchParams }: PageProps<"/
     agentChannelStats(agent.id, from),
     getPromoSettings(),
     agentHasClicks(agent.id),
+    getSiteConfig(),
   ]);
 
   const link = absoluteUrl(`/r/${agent.code}`);
@@ -225,7 +227,15 @@ export default async function PromoteOverviewPage({ searchParams }: PageProps<"/
       </section>
 
       <div id="promo-code" className="scroll-mt-28 sm:scroll-mt-32">
-        <AgentPromoCard code={agent.code} link={link} qrDataUrl={qrDataUrl} commissionRate={settings.commissionRate} />
+        <AgentPromoCard
+          code={agent.code}
+          link={link}
+          qrDataUrl={qrDataUrl}
+          commissionRate={settings.commissionRate}
+          brandName={site.name}
+          brandSlogan={site.slogan}
+          logoUrl={site.logoUrl}
+        />
       </div>
 
       <section id="effect" className="scroll-mt-28 rounded-[24px] sm:scroll-mt-32 border border-black/[0.06] bg-white p-5 dark:border-white/[0.08] dark:bg-white/[0.04] sm:p-6">

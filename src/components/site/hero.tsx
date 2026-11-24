@@ -9,7 +9,17 @@ import { LogoMark } from "./logo";
 const ease = [0.22, 1, 0.36, 1] as const;
 const icons = [Zap, ShieldCheck, Mail, Search];
 
-export function Hero({ announcement, compact = false, children }: { announcement: string; compact?: boolean; children?: ReactNode }) {
+export function Hero({
+  announcement,
+  compact = false,
+  logoUrl,
+  children,
+}: {
+  announcement: string;
+  compact?: boolean;
+  logoUrl?: string;
+  children?: ReactNode;
+}) {
   const t = useT();
   const item = (i: number) => ({
     initial: { opacity: 0, y: 22, filter: "blur(10px)" },
@@ -27,7 +37,12 @@ export function Hero({ announcement, compact = false, children }: { announcement
       >
         <div className="brand-gradient absolute inset-0 -z-10 scale-150 rounded-full opacity-40 blur-2xl" />
         <div className={compact ? "glass-strong grid size-12 place-items-center rounded-[18px] sm:size-16 sm:rounded-[22px]" : "glass-strong grid size-20 place-items-center rounded-[26px]"}>
-          <LogoMark animated className={compact ? "size-8 sm:size-10" : "size-12"} />
+          {logoUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={logoUrl} alt="" className={compact ? "size-8 rounded-lg object-contain sm:size-10" : "size-12 rounded-xl object-contain"} />
+          ) : (
+            <LogoMark animated className={compact ? "size-8 sm:size-10" : "size-12"} />
+          )}
         </div>
       </motion.div>
 
