@@ -16,7 +16,7 @@ export const SITE_SETTING_KEYS = [
   "siteOgImage",
 ] as const;
 
-export type SiteConfig = {
+type SiteConfig = {
   name: string;
   slogan: string;
   tagline: string;
@@ -35,7 +35,7 @@ export type SiteConfig = {
 
 const DEFAULT_KEYWORDS = ["Muse AI", "GPT Plus", "ChatGPT Plus", "AI 账号", "成品账号", "订阅服务"];
 
-export const DEFAULT_SITE_CONFIG: SiteConfig = {
+const DEFAULT_SITE_CONFIG: SiteConfig = {
   name: t.brand.name,
   slogan: t.brand.slogan,
   tagline: t.brand.tagline,

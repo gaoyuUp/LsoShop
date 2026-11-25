@@ -194,17 +194,16 @@ export function CheckoutPanel({ product }: { product: PublicProduct }) {
           )}
         </AnimatePresence>
         <p className="mt-2 text-xs text-muted-foreground">{t.product.emailHint}</p>
+        {product.deliveryHint && (
+          <p className="mt-2 flex items-center gap-1.5 text-xs text-muted-foreground">
+            <Truck className="mt-px size-3.5 shrink-0" />
+            {t.product.delivery}：{product.deliveryHint}
+          </p>
+        )}
       </section>
 
-      {/* 须知 */}
-      <section id="notice" className="scroll-mt-24">
+      <section id="notice" className="scroll-mt-24 lg:hidden">
         <PurchaseNotice warnings={product.warnings} notes={product.notes} />
-        {product.deliveryHint && (
-          <div className="mt-3 flex items-center gap-2 px-1 text-xs text-muted-foreground">
-            <Truck className="size-3.5" />
-            {t.product.delivery}：{product.deliveryHint}
-          </div>
-        )}
       </section>
 
       {/* 同意 + 支付 */}

@@ -1,7 +1,6 @@
 import zhCN, { type Dictionary } from "./zh-CN";
 
-export const locales = ["zh-CN"] as const;
-export type Locale = (typeof locales)[number];
+export type Locale = "zh-CN";
 export const defaultLocale: Locale = "zh-CN";
 
 const dictionaries: Record<Locale, Dictionary> = { "zh-CN": zhCN };

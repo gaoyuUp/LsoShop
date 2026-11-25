@@ -1,7 +1,6 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { motion } from "motion/react";
 import { LayoutGrid, Megaphone, ReceiptText } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -32,10 +31,9 @@ export function MobileBottomNav({ showPromote = false }: { showPromote?: boolean
               )}
             >
               {active && (
-                <motion.span
-                  layoutId="mobile-bottom-nav-pill"
+                <span
+                  aria-hidden
                   className="absolute inset-0 -z-10 rounded-[17px] bg-brand/[0.1] ring-1 ring-brand/10 dark:bg-brand/[0.16]"
-                  transition={{ type: "spring", stiffness: 420, damping: 34 }}
                 />
               )}
               <Icon className={cn("size-4", active ? "text-brand" : "text-muted-foreground/75")} />

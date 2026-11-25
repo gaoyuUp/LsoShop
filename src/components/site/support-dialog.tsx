@@ -28,7 +28,7 @@ function openHref(channel: SupportChannel, value: string) {
   return "";
 }
 
-export function SupportDialog({ support }: { support: SupportContacts }) {
+function SupportDialog({ support }: { support: SupportContacts }) {
   const [copied, setCopied] = useState<SupportChannel | null>(null);
   const channels = SUPPORT_CHANNELS.filter((c) => support[c].trim());
 

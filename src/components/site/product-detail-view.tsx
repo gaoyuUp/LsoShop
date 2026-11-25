@@ -4,6 +4,7 @@ import type { PublicProduct } from "@/lib/catalog";
 import { getDictionary } from "@/i18n";
 import { CheckoutPanel } from "./checkout-panel";
 import { ProductArt } from "./product-art";
+import { PurchaseNotice } from "./purchase-notice";
 import { RichText } from "./rich-text";
 
 /** 商品详情主体：根路径与代理链接共用，仅面包屑入口/价格由上层传入。 */
@@ -36,20 +37,28 @@ export function ProductDetailView({
         </span>
       </nav>
 
-      <div className="mt-4 grid gap-6 lg:grid-cols-[1.12fr_1fr] lg:gap-8">
-        <div className="relative lg:sticky lg:top-24 lg:mt-20 lg:self-start">
-          <ProductArt
-            image={product.image}
-            name={product.name}
-            theme={product.theme}
-            size="lg"
-            className="aspect-[4/3] w-full product-stage-mask sm:aspect-[5/4] lg:aspect-square"
-          />
-          {product.badge && (
-            <span className="absolute left-5 top-5 rounded-full border border-foreground/[0.06] bg-background/55 px-3 py-1 text-xs font-medium backdrop-blur-md">
-              {product.badge}
-            </span>
-          )}
+      <div className="mt-4 grid gap-4 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:items-start lg:gap-8">
+        <div className="space-y-4">
+          <div className="glass-card rounded-[30px] p-2.5">
+            <div className="relative overflow-hidden rounded-[22px] bg-foreground/[0.025]">
+              <ProductArt
+                image={product.image}
+                name={product.name}
+                theme={product.theme}
+                size="lg"
+                className="aspect-[4/3] w-full"
+              />
+              {product.badge && (
+                <span className="absolute left-4 top-4 rounded-full border border-foreground/[0.06] bg-background/55 px-3 py-1 text-xs font-medium backdrop-blur-md">
+                  {product.badge}
+                </span>
+              )}
+            </div>
+          </div>
+
+          <div className="hidden lg:block">
+            <PurchaseNotice warnings={product.warnings} notes={product.notes} />
+          </div>
         </div>
 
         <div className="glass rounded-[30px] p-5 sm:p-7 lg:p-8">

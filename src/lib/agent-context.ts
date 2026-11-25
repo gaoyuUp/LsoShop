@@ -7,9 +7,9 @@ import type { SupportContacts } from "@/lib/support";
 
 /** 代理归因 cookie（httpOnly）：CODE:PRICECODE:SRC（空段留空） */
 export const AFF_COOKIE = "lso_aff";
-export const AFF_COOKIE_TTL = 30 * 86_400;
+const AFF_COOKIE_TTL = 30 * 86_400;
 
-export type AgentContext = {
+type AgentContext = {
   /** 已校验有效的推广码；无效 / 已停用为 null（回退系统价） */
   code: string | null;
   /** 当前价位码值（无为主价格） */
@@ -70,7 +70,7 @@ export async function getAgentContext(): Promise<AgentContext> {
 }
 
 /** 店铺页客服：代理链接显示代理客服，根路径显示平台客服 */
-export async function resolveShopSupport(ctx: AgentContext): Promise<SupportContacts> {
+async function resolveShopSupport(ctx: AgentContext): Promise<SupportContacts> {
   if (ctx.affiliateId) {
     const agent = await getAffiliateById(ctx.affiliateId);
     if (agent) {
@@ -95,5 +95,3 @@ export async function resolveShopSupport(ctx: AgentContext): Promise<SupportCont
 export async function resolveAgentSupport(): Promise<SupportContacts> {
   return resolveShopSupport(await getAgentContext());
 }
-
-export { getAffiliateByCode, resolvePriceCode, getAffiliateById };

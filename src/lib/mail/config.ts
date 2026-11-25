@@ -4,7 +4,7 @@ import { db, schema } from "@/db";
 import { decryptSecret } from "@/lib/crypto";
 import { env } from "@/lib/env";
 
-export const MAIL_SETTING_KEYS = [
+const MAIL_SETTING_KEYS = [
   "mailHost",
   "mailPort",
   "mailSecure",
@@ -14,7 +14,7 @@ export const MAIL_SETTING_KEYS = [
   "mailEnabled",
 ] as const;
 
-export type MailConfig = {
+type MailConfig = {
   host: string;
   port: number;
   secure: boolean;

@@ -14,7 +14,6 @@ import {
   Wallet,
 } from "lucide-react";
 import { useState } from "react";
-import { motion } from "motion/react";
 import { toast } from "sonner";
 import { affiliateLogoutAction } from "@/lib/actions/affiliate-auth";
 import { cn } from "@/lib/utils";
@@ -76,11 +75,7 @@ export function PromotionNav({ agent }: { agent: { code: string; email: string; 
               )}
             >
               {active && (
-                <motion.span
-                  layoutId="promote-nav-pill"
-                  className="absolute inset-0 -z-10 rounded-full bg-foreground shadow-sm"
-                  transition={{ type: "spring", stiffness: 420, damping: 34 }}
-                />
+                <span aria-hidden className="absolute inset-0 -z-10 rounded-full bg-foreground shadow-sm" />
               )}
               <item.icon className="relative size-3.5" />
               <span className="relative">{item.label}</span>

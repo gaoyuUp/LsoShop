@@ -6,7 +6,7 @@ import { getSiteConfig } from "@/lib/site-config";
 import { getMailConfig } from "./config";
 
 type SendInput = { to: string; subject: string; html: string; orderId?: number; /** 是否写入后台邮件记录 */ log?: boolean };
-export type SendResult = "sent" | "failed" | "skipped";
+type SendResult = "sent" | "failed" | "skipped";
 
 /**
  * 统一发信入口。

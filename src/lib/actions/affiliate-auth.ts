@@ -9,7 +9,7 @@ import { clientIp, rateLimit } from "@/lib/http";
 type Mode = "activate" | "login";
 type Input = { mode: Mode; email: string; invite?: string; code?: string };
 
-export type JoinActionState = {
+type JoinActionState = {
   error?: string;
   sent?: boolean;
   devCode?: string;

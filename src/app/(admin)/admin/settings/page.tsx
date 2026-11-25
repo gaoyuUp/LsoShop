@@ -23,7 +23,7 @@ import { ImageField } from "@/components/admin/image-field";
 import { SubmitButton } from "@/components/admin/submit-button";
 import { changePasswordAction, saveMailSettingsAction, savePromoSettingsAction, saveSeoSettingsAction, saveSettingsAction, sendTestMailAction } from "@/lib/actions/settings";
 import { getSettingsMap } from "@/lib/admin-data";
-import { getSiteConfig } from "@/lib/site-config";
+import { getSiteConfig, SITE_SETTING_KEYS } from "@/lib/site-config";
 import { SupportChannelIcon } from "@/components/site/support-icons";
 import { requireAdmin } from "@/lib/auth/admin";
 import { env } from "@/lib/env";
@@ -47,7 +47,7 @@ export default async function AdminSettingsPage({ searchParams }: PageProps<"/ad
     getSettingsMap([
       "announcement", "supportQQ", "supportWechat", "supportEmail", "supportTelegram",
       "promo_min_withdraw_cents", "promo_commission_rate", "promo_invite_ttl_days", "promo_max_price_codes",
-      "siteName", "siteSlogan", "siteTagline", "seoDescription", "seoKeywords", "siteLogo", "siteIcon", "siteOgImage",
+      ...SITE_SETTING_KEYS,
     ]),
     getMailStatus(),
     getSiteConfig(),

@@ -9,7 +9,7 @@ function key() {
   return new TextEncoder().encode(secret);
 }
 
-export type AffiliateSession = { sub: string; email: string };
+type AffiliateSession = { sub: string; email: string };
 
 export async function signAffiliateSession(payload: AffiliateSession) {
   return new SignJWT({ email: payload.email })

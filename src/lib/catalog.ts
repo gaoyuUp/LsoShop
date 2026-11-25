@@ -6,7 +6,7 @@ import { getStockMap, releaseExpiredOrders } from "@/lib/orders";
 
 const { products, productVariants, productCategories } = schema;
 
-export type PublicVariant = {
+type PublicVariant = {
   id: number;
   name: string;
   description: string;
@@ -46,7 +46,7 @@ export type PublicProduct = {
 };
 
 /** 代理视角：把可见规格价格替换为代理客户价（未设价 / 规格不参与代理销售时保持系统价） */
-export type AgentShopContext = { affiliateId: number; priceCodeId: number | null };
+type AgentShopContext = { affiliateId: number; priceCodeId: number | null };
 
 async function load(where?: ReturnType<typeof eq>, agent?: AgentShopContext) {
   await releaseExpiredOrders();

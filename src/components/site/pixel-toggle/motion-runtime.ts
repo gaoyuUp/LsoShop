@@ -6,7 +6,7 @@ export interface MotionController {
   update(options: MotionOptions): void;
   destroy(): void;
 }
-export interface SurfaceConfig { markup: string; css: string; width: number; height: number; responsive?: boolean }
+interface SurfaceConfig { markup: string; css: string; width: number; height: number; responsive?: boolean }
 const fonts = new Map<string, { face: FontFace; users: number }>();
 
 export function createSurface(target: HTMLElement, config: SurfaceConfig, initial: MotionOptions = {}) {

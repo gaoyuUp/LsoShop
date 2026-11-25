@@ -28,9 +28,9 @@ export function ProductGrid({ products }: { products: PublicProduct[] }) {
           ))}
         </div>
       )}
-      <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid grid-cols-2 gap-2.5 max-[359px]:grid-cols-1 max-[359px]:gap-5 sm:gap-5 lg:grid-cols-3">
         {visible.map((p, i) => (
-          <ProductCard key={p.id} product={p} index={i} />
+          <ProductCard key={p.id} product={p} index={i} surface="plain" compact />
         ))}
       </div>
       {visible.length === 0 && (

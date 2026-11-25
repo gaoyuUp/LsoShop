@@ -11,26 +11,23 @@ import { cn } from "@/lib/utils";
 
 /**
  * 3D 倾斜卡片：跟随指针倾斜 + 光斑高光 + 流光边框。
- * 子元素可用 data-depth 获得视差位移（越大越「浮」）。
  */
 export function TiltCard({
   children,
   className,
   theme,
-  max = 9,
-  glare = true,
-  ...rest
+  surface = "glass",
 }: {
   children: React.ReactNode;
   className?: string;
   theme?: string;
-  max?: number;
-  glare?: boolean;
-} & Omit<React.HTMLAttributes<HTMLDivElement>, "onDrag" | "onDragStart" | "onDragEnd" | "onAnimationStart">) {
+  surface?: "glass" | "plain";
+}) {
   const reduce = useReducedMotion();
   const px = useMotionValue(0.5);
   const py = useMotionValue(0.5);
   const spring = { stiffness: 180, damping: 18, mass: 0.6 };
+  const max = 9;
   const rx = useSpring(useTransform(py, [0, 1], [max, -max]), spring);
   const ry = useSpring(useTransform(px, [0, 1], [-max, max]), spring);
   const gx = useTransform(px, (v) => `${v * 100}%`);
@@ -58,17 +55,18 @@ export function TiltCard({
         onPointerEnter={() => lift.set(1)}
         onPointerLeave={onLeave}
         style={{ rotateX: rx, rotateY: ry, transformStyle: "preserve-3d", z: useTransform(lift, [0, 1], [0, 24]) }}
-        className={cn("beam glass group/tilt relative h-full rounded-[28px]", className)}
-        {...rest}
+        className={cn(
+          "beam group/tilt relative h-full rounded-[28px]",
+          surface === "plain" ? "card-plain" : "glass",
+          className,
+        )}
       >
         {children}
-        {glare && (
-          <motion.div
-            aria-hidden
-            className="pointer-events-none absolute inset-0 z-10 rounded-[inherit] opacity-0 mix-blend-soft-light transition-opacity duration-500 group-hover/tilt:opacity-100 dark:mix-blend-overlay"
-            style={{ background: glareBg }}
-          />
-        )}
+        <motion.div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 z-10 rounded-[inherit] opacity-0 mix-blend-soft-light transition-opacity duration-500 group-hover/tilt:opacity-100 dark:mix-blend-overlay"
+          style={{ background: glareBg }}
+        />
       </motion.div>
     </div>
   );

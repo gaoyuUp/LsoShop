@@ -24,13 +24,13 @@ const randomInvite = customAlphabet("ABCDEFGHJKMNPQRSTUVWXYZ23456789", 4);
 const randomAffiliate = customAlphabet("ABCDEFGHJKMNPQRSTUVWXYZ23456789", 6);
 const randomPriceCode = customAlphabet("ABCDEFGHJKMNPQRSTUVWXYZ23456789", 8);
 
-export function newInviteCode() {
+function newInviteCode() {
   return `${randomInvite()}-${randomInvite()}-${randomInvite()}`;
 }
-export function newAffiliateCode() {
+function newAffiliateCode() {
   return randomAffiliate();
 }
-export function newPriceCodeValue() {
+function newPriceCodeValue() {
   return randomPriceCode();
 }
 
@@ -123,7 +123,7 @@ export async function redeemInvite(codeValue: string, email: string) {
 
 /* ---------------- 代理客户价 ---------------- */
 
-export type VariantPriceInfo = {
+type VariantPriceInfo = {
   variantId: number;
   /** 展示给客户的价格（分） */
   priceCents: number;
@@ -241,7 +241,7 @@ export async function saveAgentPricing(
 
 /* ---------------- 代理店铺（/r/:code） ---------------- */
 
-export type AgentShop = {
+type AgentShop = {
   affiliate: { id: number; code: string; status: string };
   /** 当前生效的价位码（null = 主价格） */
   priceCode: { id: number; code: string; name: string } | null;
@@ -315,7 +315,7 @@ export async function resolvePriceCode(affiliateId: number, value?: string) {
 /* ---------------- 客户绑定 ---------------- */
 
 /** 结算时绑定客户：同一邮箱永久归属首位代理，后来者不改绑 */
-export async function bindCustomer(affiliateId: number, email: string, orderId: number) {
+async function bindCustomer(affiliateId: number, email: string, orderId: number) {
   const normalized = email.trim().toLowerCase();
   if (!normalized) return;
   const [existing] = await db.select().from(customerBindings).where(eq(customerBindings.customerEmail, normalized));
@@ -654,7 +654,7 @@ export async function agentLeaderboard(opts: { productId?: number; metric: "reve
 
 /* ---------------- 推广效果统计 ---------------- */
 
-export type PromoEffectRow = {
+type PromoEffectRow = {
   day: string;
   visitors: number;
   opens: number;

@@ -7,7 +7,7 @@ import { SubmitButton } from "@/components/admin/submit-button";
 import { THEME_LABEL, THEMES, type ThemeName } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
-export type ProductFormValues = {
+type ProductFormValues = {
   id?: number;
   categoryId: number | null;
   name: string;

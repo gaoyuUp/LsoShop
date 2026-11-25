@@ -9,7 +9,7 @@ function key() {
   return new TextEncoder().encode(secret);
 }
 
-export type AdminSession = { sub: string; username: string };
+type AdminSession = { sub: string; username: string };
 
 export async function signAdminSession(payload: AdminSession) {
   return new SignJWT({ username: payload.username })

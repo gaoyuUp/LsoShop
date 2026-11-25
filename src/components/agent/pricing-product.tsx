@@ -17,7 +17,7 @@ export type PricingVariantView = {
   isDefault: boolean;
 };
 
-export type PricingProductView = {
+type PricingProductView = {
   id: number;
   name: string;
   categoryName: string;

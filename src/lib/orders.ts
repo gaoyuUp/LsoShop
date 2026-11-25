@@ -16,9 +16,9 @@ const randomToken = customAlphabet("ABCDEFGHJKLMNPQRSTUVWXYZ23456789", 12);
 export class OrderError extends Error {}
 
 /** 交付内容中多份之间的分隔符 */
-export const DELIVERY_SEPARATOR = "\n---\n";
+const DELIVERY_SEPARATOR = "\n---\n";
 
-export function hashToken(token: string) {
+function hashToken(token: string) {
   return createHash("sha256").update(token.trim().toUpperCase()).digest("hex");
 }
 
@@ -61,7 +61,7 @@ export async function getStockMap(variantIds: number[]) {
   return map;
 }
 
-export type CreateOrderInput = {
+type CreateOrderInput = {
   variantId: number;
   quantity: number;
   email: string;
@@ -76,7 +76,7 @@ export type CreateOrderInput = {
   buyerAffiliateId?: number | null;
 };
 
-export type OrderAttribution = {
+type OrderAttribution = {
   orderType: "normal" | "self" | "affiliate";
   affiliateId: number | null;
   affiliateCode: string;
@@ -91,7 +91,7 @@ export type OrderAttribution = {
 };
 
 /** 解析订单的推广归因：代理码 / 价位码 / 自购识别，价格服务端重算 */
-export async function resolveOrderAttribution(
+async function resolveOrderAttribution(
   input: {
     affiliateCode?: string;
     priceCode?: string;
@@ -443,8 +443,6 @@ function safeEqual(a: string, b: string) {
   const y = Buffer.from(b);
   return x.length === y.length && timingSafeEqual(x, y);
 }
-
-export type PublicOrder = Awaited<ReturnType<typeof toPublicOrder>>;
 
 async function toPublicOrder(order: typeof orders.$inferSelect) {
   const payment =

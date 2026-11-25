@@ -7,7 +7,7 @@ import { env } from "@/lib/env";
  * 以后：alipay —— 实现 createPayment（当面付预下单拿 qr_code）与 verifyNotify（验签异步通知），
  *       然后在 /api/payment/alipay/notify 里校验通过后调用 markOrderPaid 即可，其余流程无需改动。
  */
-export type PaymentSession = {
+type PaymentSession = {
   method: "alipay";
   /** 二维码内容（支付宝返回的 qr_code 链接） */
   qrContent: string;
@@ -15,9 +15,9 @@ export type PaymentSession = {
   mock: boolean;
 };
 
-export type CreatePaymentInput = { orderNo: string; subject: string; totalCents: number };
+type CreatePaymentInput = { orderNo: string; subject: string; totalCents: number };
 
-export interface PaymentProvider {
+interface PaymentProvider {
   createPayment(input: CreatePaymentInput): Promise<PaymentSession>;
 }
 

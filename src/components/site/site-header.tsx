@@ -1,5 +1,5 @@
 "use client";
-import { motion, useMotionValueEvent, useScroll } from "motion/react";
+import { useMotionValueEvent, useScroll } from "motion/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
@@ -60,11 +60,7 @@ export function SiteHeader({
                 )}
               >
                 {l.active && (
-                  <motion.span
-                    layoutId="nav-pill"
-                    className="absolute inset-0 -z-10 rounded-full bg-foreground/[0.07]"
-                    transition={{ type: "spring", stiffness: 420, damping: 34 }}
-                  />
+                  <span aria-hidden className="absolute inset-0 -z-10 rounded-full bg-foreground/[0.07]" />
                 )}
                 {l.label}
               </Link>
