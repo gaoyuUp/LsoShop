@@ -12,10 +12,6 @@ type Input = { mode: Mode; email: string; invite?: string; code?: string };
 type JoinActionState = {
   error?: string;
   sent?: boolean;
-  devCode?: string;
-  email?: string;
-  invite?: string;
-  mode?: Mode;
   ok?: boolean;
 };
 
@@ -40,14 +36,8 @@ export async function sendAffiliateCodeAction(input: Input): Promise<JoinActionS
       if (!affiliate || affiliate.status !== "active") return { error: "该邮箱尚未开通代理账号" };
     }
 
-    const result = await sendVerificationCode(email, input.mode);
-    return {
-      sent: true,
-      devCode: result.devCode,
-      email,
-      invite,
-      mode: input.mode,
-    };
+    await sendVerificationCode(email, input.mode);
+    return { sent: true };
   } catch (e) {
     if (e instanceof EmailCodeError || e instanceof AffiliateError) return { error: e.message };
     console.error("[affiliate send code]", e);
@@ -77,7 +67,7 @@ export async function verifyAffiliateCodeAction(input: Input): Promise<JoinActio
     return { error: "开通失败，请稍后重试" };
   }
 
-  return { ok: true, email, mode: input.mode };
+  return { ok: true };
 }
 
 export async function affiliateLogoutAction() {

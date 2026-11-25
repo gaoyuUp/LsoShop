@@ -16,8 +16,8 @@ const CODE_LIMIT_PER_HOUR = 5;
 
 export class EmailCodeError extends Error {}
 
-/** 发送验证码（邮箱未配置时不真发，但代码仍生成并写入数据库，方便本地联调） */
-export async function sendVerificationCode(email: string, purpose: Purpose) {
+/** 发送验证码（邮箱未配置时不真发，但代码仍生成并写入数据库，管理员可在后台验证码收件箱查看） */
+export async function sendVerificationCode(email: string, purpose: Purpose): Promise<void> {
   const normalized = email.trim().toLowerCase();
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalized)) throw new EmailCodeError("邮箱格式不正确");
   const ip = await clientIp();
@@ -66,7 +66,7 @@ export async function sendVerificationCode(email: string, purpose: Purpose) {
 
   const label = purpose === "activate" ? "开通代理账号" : "代理登录";
   const site = await getSiteConfig();
-  const status = await sendMail({
+  await sendMail({
     to: normalized,
     subject: `【${site.name}】${label}验证码 ${code}`,
     log: false,
@@ -78,8 +78,6 @@ export async function sendVerificationCode(email: string, purpose: Purpose) {
     <p style="color:#71717a;font-size:13px;line-height:1.8">验证码 10 分钟内有效。如非本人操作，请忽略本邮件。</p>
   </div></body></html>`,
   });
-  // 本地 SMTP 未配置时允许开发环境直接显示验证码，生产环境绝不返回。
-  return { sent: status === "sent", devCode: process.env.NODE_ENV === "production" ? undefined : code };
 }
 
 /** 校验验证码；成功标记已用，失败累计尝试次数 */

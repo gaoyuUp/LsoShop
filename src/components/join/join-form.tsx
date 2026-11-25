@@ -13,7 +13,6 @@ export function JoinForm({ initialInvite = "", initialMode = "activate" }: { ini
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
   const [sent, setSent] = useState(false);
-  const [devCode, setDevCode] = useState("");
   const [error, setError] = useState("");
   const [pending, startTransition] = useTransition();
   const router = useRouter();
@@ -22,7 +21,6 @@ export function JoinForm({ initialInvite = "", initialMode = "activate" }: { ini
     setMode(next);
     setSent(false);
     setCode("");
-    setDevCode("");
     setError("");
   }
 
@@ -35,14 +33,13 @@ export function JoinForm({ initialInvite = "", initialMode = "activate" }: { ini
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ mode, email, invite }),
         });
-        const result = (await res.json()) as { error?: string; devCode?: string };
+        const result = (await res.json()) as { error?: string };
         if (!res.ok || result.error) {
           setError(result.error || "验证码发送失败，请稍后重试");
           return;
         }
         setSent(true);
-        setDevCode(result.devCode ?? "");
-        toast.success(result.devCode ? "验证码已生成，请联系管理员获取" : "验证码已发送，请检查邮箱");
+        toast.success("验证码已发送，请检查邮箱，如未收到请联系管理员");
       } catch {
         setError("网络异常，请稍后重试");
       }
@@ -158,11 +155,6 @@ export function JoinForm({ initialInvite = "", initialMode = "activate" }: { ini
                 className="h-12 w-full rounded-xl border border-foreground/10 bg-background/65 px-4 text-center font-mono text-lg tracking-[0.35em] outline-none transition placeholder:tracking-normal placeholder:text-muted-foreground/50 focus:border-transparent focus:ring-[1.5px] focus:ring-brand"
               />
             </label>
-            {devCode && (
-              <p className="rounded-xl border border-amber-500/20 bg-amber-500/[0.06] px-3 py-2 text-[12px] text-amber-700 dark:text-amber-300">
-                验证码：<span className="font-mono font-semibold">{devCode}</span>（如未收到邮件，请联系管理员）
-              </p>
-            )}
             <button
               type="button"
               onClick={verify}
