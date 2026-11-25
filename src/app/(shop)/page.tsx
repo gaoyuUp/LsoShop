@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { connection } from "next/server";
+import { PackageCheck, ShoppingBag, Sparkles, Wallet } from "lucide-react";
 import { Hero } from "@/components/site/hero";
 import { HomeFeaturesEmbed } from "@/components/site/home-features-embed";
 import { ProductGrid } from "@/components/site/product-grid";
@@ -8,9 +9,11 @@ import { getListedProducts, getSetting } from "@/lib/catalog";
 import { getAgentContext } from "@/lib/agent-context";
 import { absoluteUrl, serializeJsonLd } from "@/lib/seo";
 import { getSiteConfig } from "@/lib/site-config";
+import { cn } from "@/lib/utils";
 
 const t = getDictionary();
 const DEFAULT_HOME_KEYWORDS = ["Muse AI", "GPT Plus", "ChatGPT Plus", "AI 成品账号", "AI 订阅服务", "自动发货"];
+const STEP_ICONS = [ShoppingBag, Wallet, PackageCheck];
 
 export async function generateMetadata(): Promise<Metadata> {
   const site = await getSiteConfig();
@@ -95,20 +98,41 @@ export default async function HomePage() {
       </section>
 
       <section className="mx-auto mt-16 max-w-6xl px-4 sm:mt-24 sm:px-6">
-        <h2 className="px-2 text-2xl font-semibold tracking-tight sm:text-3xl">{t.home.stepsTitle}</h2>
-        <ol className="mt-8 grid gap-4 sm:grid-cols-3">
-          {t.home.steps.map((s, i) => (
-            <li key={s.title} className="glass relative overflow-hidden rounded-3xl p-6">
-              <span className="brand-text absolute -right-2 -top-6 font-mono text-[96px] font-bold leading-none opacity-[0.14]">
-                {i + 1}
-              </span>
-              <span className="grid size-8 place-items-center rounded-full bg-foreground font-mono text-xs text-background">
-                0{i + 1}
-              </span>
-              <h3 className="mt-6 text-base font-semibold">{s.title}</h3>
-              <p className="mt-1.5 text-sm text-muted-foreground">{s.desc}</p>
-            </li>
-          ))}
+        <div className="mb-6 flex flex-wrap items-end justify-between gap-4 px-2 sm:mb-8">
+          <div>
+            <div className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground/70">how it works</div>
+            <h2 className="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">{t.home.stepsTitle}</h2>
+            <p className="mt-2 text-sm text-muted-foreground">{t.home.stepsDesc}</p>
+          </div>
+          <span className="inline-flex items-center gap-2 rounded-full border border-foreground/[0.08] bg-background/50 px-3 py-1.5 text-xs text-muted-foreground backdrop-blur">
+            <Sparkles className="size-3.5 text-brand" />
+            自动交付 · 全天可用
+          </span>
+        </div>
+        <ol className="glass grid overflow-hidden rounded-[30px] p-2 sm:grid-cols-3">
+          {t.home.steps.map((s, i) => {
+            const Icon = STEP_ICONS[i];
+            return (
+              <li
+                key={s.title}
+                className={cn(
+                  "group relative flex gap-4 p-4 transition-colors hover:bg-foreground/[0.02] sm:p-6",
+                  i > 0 && "border-t border-foreground/[0.06] sm:border-l sm:border-t-0",
+                )}
+              >
+                <span className="brand-gradient grid size-11 shrink-0 place-items-center rounded-2xl text-white shadow-lg shadow-brand/20">
+                  <Icon className="size-5" />
+                </span>
+                <div className="min-w-0">
+                  <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-muted-foreground/60">
+                    Step 0{i + 1}
+                  </span>
+                  <h3 className="mt-1.5 text-base font-semibold tracking-tight">{s.title}</h3>
+                  <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{s.desc}</p>
+                </div>
+              </li>
+            );
+          })}
         </ol>
       </section>
     </>

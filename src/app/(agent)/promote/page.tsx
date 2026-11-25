@@ -15,6 +15,7 @@ import {
   Wallet,
 } from "lucide-react";
 import { AgentPromoCard } from "@/components/agent/promo-card";
+import { PromoEffectChart } from "@/components/agent/promo-effect-chart";
 import {
   agentBalance,
   agentChannelStats,
@@ -32,7 +33,6 @@ import { cn } from "@/lib/utils";
 import { getSiteConfig } from "@/lib/site-config";
 
 const DAYS = [1, 7, 30, 90] as const;
-const COLORS = { visitors: "#7c5cff", opens: "#2bb8a3", orders: "#f2a93b", paid: "#f25c9d" };
 
 function money(cents: number) {
   return `¥${formatPrice(cents)}`;
@@ -92,23 +92,6 @@ export default async function PromoteOverviewPage({ searchParams }: PageProps<"/
     { visitors: 0, opens: 0, orders: 0, paid: 0 },
   );
   const conversion = totals.visitors > 0 ? `${((totals.paid / totals.visitors) * 100).toFixed(1)}%` : "—";
-  const maxValue = Math.max(1, ...effect.flatMap((r) => [r.visitors, r.opens, r.orders, r.paid]));
-  const svgW = 760;
-  const svgH = 220;
-  const pad = { left: 34, right: 12, top: 18, bottom: 24 };
-  const innerW = svgW - pad.left - pad.right;
-  const innerH = svgH - pad.top - pad.bottom;
-  const point = (i: number, value: number) => {
-    const x = pad.left + (effect.length <= 1 ? innerW / 2 : (i / (effect.length - 1)) * innerW);
-    const y = pad.top + innerH - (value / maxValue) * innerH;
-    return `${x.toFixed(1)},${y.toFixed(1)}`;
-  };
-  const series = [
-    { key: "visitors" as const, label: "访客", color: COLORS.visitors },
-    { key: "opens" as const, label: "链接打开", color: COLORS.opens },
-    { key: "orders" as const, label: "下单", color: COLORS.orders },
-    { key: "paid" as const, label: "付款", color: COLORS.paid },
-  ];
   const metrics = [
     { label: "访客", value: String(totals.visitors), note: "去重访客" },
     { label: "链接打开", value: String(totals.opens), note: "推广链接访问" },
@@ -290,27 +273,7 @@ export default async function PromoteOverviewPage({ searchParams }: PageProps<"/
           </div>
         ) : (
           <div className="animate-in fade-in-0 slide-in-from-bottom-1 duration-300">
-        <div className="mt-5 overflow-x-auto">
-          <svg viewBox={`0 0 ${svgW} ${svgH}`} className="min-w-[620px] w-full" role="img" aria-label="推广效果趋势图">
-            {[0, 0.25, 0.5, 0.75, 1].map((t) => (
-              <g key={t}>
-                <line x1={pad.left} x2={svgW - pad.right} y1={pad.top + innerH * t} y2={pad.top + innerH * t} stroke="currentColor" strokeOpacity="0.06" strokeWidth="1" />
-                <text x={pad.left - 8} y={pad.top + innerH * t + 3} textAnchor="end" fontSize="9" fill="currentColor" opacity="0.4">{Math.round(maxValue * (1 - t))}</text>
-              </g>
-            ))}
-            {series.map((s) => (
-              <g key={s.key}>
-                <polyline fill="none" stroke={s.color} strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" points={effect.map((r, i) => point(i, r[s.key])).join(" ")} />
-                {effect.map((r, i) => <circle key={i} cx={point(i, r[s.key]).split(",")[0]} cy={point(i, r[s.key]).split(",")[1]} r={days <= 7 ? 2.4 : 1.2} fill={s.color} />)}
-              </g>
-            ))}
-          </svg>
-        </div>
-        <div className="mt-2 flex flex-wrap gap-4">
-          {series.map((s) => (
-            <span key={s.key} className="inline-flex items-center gap-1.5 text-[11px] text-muted-foreground"><span className="size-2 rounded-full" style={{ background: s.color }} />{s.label}</span>
-          ))}
-        </div>
+        <PromoEffectChart effect={effect} />
 
         <div className="mt-5 max-h-64 overflow-auto rounded-xl border border-black/[0.05] dark:border-white/[0.06]">
           <table className="w-full min-w-[520px] text-left text-[11px]">
@@ -318,7 +281,7 @@ export default async function PromoteOverviewPage({ searchParams }: PageProps<"/
               <tr><th className="px-3 py-2 font-medium">日期</th><th className="px-3 py-2 font-medium">访客</th><th className="px-3 py-2 font-medium">链接打开</th><th className="px-3 py-2 font-medium">下单</th><th className="px-3 py-2 font-medium">付款</th></tr>
             </thead>
             <tbody>
-              {effect.map((r) => (
+              {[...effect].reverse().map((r) => (
                 <tr key={r.day} className="border-t border-black/[0.04] dark:border-white/[0.05]">
                   <td className="px-3 py-2 font-mono text-muted-foreground">{r.day.slice(5)}</td><td className="px-3 py-2">{r.visitors}</td><td className="px-3 py-2">{r.opens}</td><td className="px-3 py-2">{r.orders}</td><td className="px-3 py-2">{r.paid}</td>
                 </tr>

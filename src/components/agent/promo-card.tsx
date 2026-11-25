@@ -8,7 +8,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import {
   motion,
   useMotionTemplate,
@@ -38,6 +38,7 @@ export function AgentPromoCard({
   logoUrl?: string;
 }) {
   const [copied, setCopied] = useState<"link" | "code" | "text" | null>(null);
+  const lastTextIndex = useRef(-1);
   const reduceMotion = useReducedMotion();
   const pointerX = useMotionValue(0.5);
   const pointerY = useMotionValue(0.5);
@@ -63,6 +64,24 @@ export function AgentPromoCard({
     setCopied(kind);
     toast.success(kind === "code" ? "推广码已复制" : kind === "text" ? "推广文案已复制" : "推广链接已复制");
     window.setTimeout(() => setCopied(null), 1500);
+  }
+
+  const promoTexts = [
+    `【${brandName}】${brandSlogan}，专属价购买：${link}\n推广码：${code}`,
+    `给你分享一个靠谱的 AI 小店：${brandName}。\n${brandSlogan}，付款自动发货，订单随时可查。\n专属价入口：${link}\n推广码：${code}`,
+    `AI 账号与订阅服务，不用到处找。\n${brandName} 精选现货，专属价已为你开通：${link}\n推广码：${code}`,
+    `最近在用 ${brandName} 买 AI 账号，自动发货、邮件留底，挺省心。\n通过我的专属链接下单：${link}\n推广码：${code}`,
+    `需要 AI 账号或订阅服务？来 ${brandName} 看看。\n${brandSlogan}，下单后自动交付。\n专属入口：${link}\n推广码：${code}`,
+    `【专属福利】通过我的链接进入 ${brandName}，可享专属客户价。\n链接：${link}\n推广码：${code}\n付款后自动发货，内容随时可查。`,
+  ];
+
+  function copyPromoText() {
+    let index = Math.floor(Math.random() * promoTexts.length);
+    if (promoTexts.length > 1 && index === lastTextIndex.current) {
+      index = (index + 1) % promoTexts.length;
+    }
+    lastTextIndex.current = index;
+    void copy("text", promoTexts[index]);
   }
 
   const displayLink = link.replace(/^https?:\/\//, "");
@@ -182,7 +201,7 @@ export function AgentPromoCard({
             </a>
             <button
               type="button"
-              onClick={() => copy("text", `【${brandName}】${brandSlogan}，专属价购买：${link}\n推广码：${code}`)}
+              onClick={copyPromoText}
               className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-black/[0.08] px-3 text-xs transition hover:border-black/20 dark:border-white/[0.1] dark:hover:border-white/25"
             >
               <Copy className="size-3.5" />
