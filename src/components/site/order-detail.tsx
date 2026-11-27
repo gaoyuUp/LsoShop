@@ -49,6 +49,8 @@ type OrderView = {
   unitPriceCents: number;
   totalCents: number;
   email: string;
+  buyerInputLabel: string;
+  buyerInput: string;
   emailStatus: string;
   paymentMethod: string;
   createdAt: string;
@@ -541,6 +543,12 @@ export function OrderDetail({ orderNo, support }: { orderNo: string; support: Su
               <dl className="space-y-2.5 text-sm">
                 <Row label={t.order.unitPrice} value={`¥${formatPrice(order.unitPriceCents)}`} />
                 <Row label={t.order.quantity} value={`× ${order.quantity}`} />
+                {order.buyerInput && (
+                  <Row
+                    label={order.buyerInputLabel || "下单信息"}
+                    value={<span className="break-all font-mono text-xs">{order.buyerInput}</span>}
+                  />
+                )}
                 <Row
                   label={t.order.amount}
                   value={

@@ -1,5 +1,5 @@
 import "server-only";
-import { createHash, timingSafeEqual } from "node:crypto";
+import { createHash, createHmac, timingSafeEqual } from "node:crypto";
 import { and, asc, eq, inArray, lt, sql } from "drizzle-orm";
 import { customAlphabet } from "nanoid";
 import { db, schema } from "@/db";
@@ -26,6 +26,60 @@ function newOrderNo() {
   const d = new Date(Date.now() + 8 * 3600_000); // 北京时间
   const pad = (n: number) => String(n).padStart(2, "0");
   return `LS${String(d.getUTCFullYear()).slice(2)}${pad(d.getUTCMonth() + 1)}${pad(d.getUTCDate())}${pad(d.getUTCHours())}${pad(d.getUTCMinutes())}${randomDigits()}`;
+}
+
+/** 代理分享给客户的订单查看令牌：只签名订单号，不新增数据库字段 */
+export function createOrderShareToken(orderNo: string) {
+  const secret = env.authSecret;
+  if (!secret) throw new Error("AUTH_SECRET 未配置");
+  return createHmac("sha256", secret).update(`order-share:${orderNo.trim().toUpperCase()}`).digest("base64url").slice(0, 32);
+}
+
+export function verifyOrderShareToken(orderNo: string, token: string) {
+  const expected = createOrderShareToken(orderNo);
+  const given = (token ?? "").trim();
+  const a = Buffer.from(expected);
+  const b = Buffer.from(given);
+  return a.length === b.length && timingSafeEqual(a, b);
+}
+
+export type SharedOrderData = {
+  orderNo: string;
+  status: string;
+  productName: string;
+  variantName: string;
+  productImage: string;
+  quantity: number;
+  buyerInputLabel: string;
+  buyerInput: string;
+  createdAt: string;
+  paidAt: string | null;
+  deliveredAt: string | null;
+  deliveryItems: string[];
+};
+
+/** 客户分享页数据：不包含价格、成本、佣金、邮箱和推广归因 */
+export async function getSharedOrderData(orderNo: string): Promise<SharedOrderData | null> {
+  await releaseExpiredOrders();
+  const [order] = await db.select().from(orders).where(eq(orders.orderNo, orderNo.trim().toUpperCase()));
+  if (!order) return null;
+  return {
+    orderNo: order.orderNo,
+    status: order.status,
+    productName: order.productName,
+    variantName: order.variantName,
+    productImage: order.productImage,
+    quantity: order.quantity,
+    buyerInputLabel: order.buyerInputLabel,
+    buyerInput: order.buyerInput,
+    createdAt: order.createdAt.toISOString(),
+    paidAt: order.paidAt?.toISOString() ?? null,
+    deliveredAt: order.deliveredAt?.toISOString() ?? null,
+    deliveryItems:
+      order.status === "delivered" && order.deliveryContent
+        ? order.deliveryContent.split(DELIVERY_SEPARATOR).map((s) => s.trim()).filter(Boolean)
+        : [],
+  };
 }
 
 /** 关闭超时未支付的订单并释放其锁定库存（惰性执行，无需定时任务） */
@@ -65,11 +119,10 @@ type CreateOrderInput = {
   variantId: number;
   quantity: number;
   email: string;
+  buyerInput?: string;
+  /** 优惠码（代理推广码或价位码），服务端重新解析并校验 */
+  couponCode?: string;
   clientIp?: string;
-  /** 推广代理码（来自 lso_aff cookie，服务端校验） */
-  affiliateCode?: string;
-  /** 价位码值 */
-  priceCode?: string;
   /** 渠道来源 */
   src?: string;
   /** 当前登录代理 id（用于识别代理自购） */
@@ -100,9 +153,11 @@ async function resolveOrderAttribution(
     variantId: number;
     buyerAffiliateId?: number | null;
   },
-  variant: { priceCents: number; affiliateCostCents: number },
+  variant: { priceCents: number; originalPriceCents: number; affiliateCostCents: number },
 ): Promise<OrderAttribution> {
   const src = (input.src ?? "").slice(0, 40);
+  const listPriceCents =
+    variant.originalPriceCents > 0 ? Math.max(variant.originalPriceCents, variant.priceCents) : variant.priceCents;
   const fallbackCost = variant.affiliateCostCents > 0 ? variant.affiliateCostCents : variant.priceCents;
   const base = {
     orderType: "normal" as const,
@@ -110,8 +165,8 @@ async function resolveOrderAttribution(
     affiliateCode: "",
     priceCodeValue: "",
     src,
-    unitPriceCents: variant.priceCents,
-    systemPriceCents: variant.priceCents,
+    unitPriceCents: listPriceCents,
+    systemPriceCents: listPriceCents,
     costPriceCents: fallbackCost,
     commissionCents: 0,
     priceCodeId: null as number | null,
@@ -178,12 +233,31 @@ export async function createOrder(input: CreateOrderInput) {
   const email = input.email.trim().toLowerCase();
   if (product.requireEmail && !email) throw new OrderError("请填写收件邮箱");
   if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new OrderError("邮箱格式不正确");
+  const buyerInputLabel = product.buyerInputLabel.trim();
+  const buyerInput = buyerInputLabel ? (input.buyerInput ?? "").trim().slice(0, 255) : "";
+  if (buyerInputLabel && !buyerInput) throw new OrderError(`请填写${buyerInputLabel}`);
+  if (buyerInputLabel && product.buyerInputLength > 0 && buyerInput.length !== product.buyerInputLength) {
+    throw new OrderError(`请填写 ${product.buyerInputLength} 位${buyerInputLabel}`);
+  }
 
-  // 推广归因：代理码来自 cookie（服务端校验），规格未启用代理销售时回退系统价
+  const couponCode = (input.couponCode ?? "").trim().toUpperCase();
+  let couponAffiliateCode: string | undefined;
+  let couponPriceCode: string | undefined;
+  if (couponCode) {
+    const { resolveAgentEntry } = await import("@/lib/affiliate");
+    const entry = await resolveAgentEntry(couponCode);
+    if ("invalid" in entry) throw new OrderError("优惠码无效或已停用");
+    if (variant.affiliateEnabled) {
+      couponAffiliateCode = entry.affiliate.code;
+      couponPriceCode = entry.priceCode?.code;
+    }
+  }
+
+  // 推广归因：优惠码服务端重新校验，未带优惠码时按主站最高价
   const attribution = await resolveOrderAttribution(
     {
-      affiliateCode: variant.affiliateEnabled ? input.affiliateCode : undefined,
-      priceCode: variant.affiliateEnabled ? input.priceCode : undefined,
+      affiliateCode: couponAffiliateCode,
+      priceCode: couponPriceCode,
       src: input.src,
       email,
       variantId: variant.id,
@@ -194,7 +268,12 @@ export async function createOrder(input: CreateOrderInput) {
 
   const orderNo = newOrderNo();
   const token = randomToken();
-  const unitPriceCents = (attribution.unitPriceCents ?? variant.priceCents) > 0 ? (attribution.unitPriceCents ?? variant.priceCents) : variant.priceCents;
+  const fallbackPriceCents =
+    variant.originalPriceCents > 0 ? Math.max(variant.originalPriceCents, variant.priceCents) : variant.priceCents;
+  const unitPriceCents =
+    (attribution.unitPriceCents ?? fallbackPriceCents) > 0
+      ? (attribution.unitPriceCents ?? fallbackPriceCents)
+      : fallbackPriceCents;
   const totalCents = unitPriceCents * quantity;
   const expiresAt = new Date(Date.now() + env.orderExpireMinutes * 60_000);
 
@@ -220,6 +299,8 @@ export async function createOrder(input: CreateOrderInput) {
         orderNo,
         tokenHash: hashToken(token),
         email,
+        buyerInputLabel,
+        buyerInput,
         productId: product.id,
         variantId: variant.id,
         productName: product.name,
@@ -397,10 +478,8 @@ async function recordEntitlement(orderId: number) {
       customerEmail: order.email.trim().toLowerCase(),
       orderId: order.id,
       orderNo: order.orderNo,
-      productId: order.productId,
       productName: order.productName,
       variantName: order.variantName,
-      startsAt,
       expiresAt,
       status: "active",
     })
@@ -461,6 +540,8 @@ async function toPublicOrder(order: typeof orders.$inferSelect) {
     unitPriceCents: order.unitPriceCents,
     totalCents: order.totalCents,
     email: order.email,
+    buyerInputLabel: order.buyerInputLabel,
+    buyerInput: order.buyerInput,
     emailStatus: order.emailStatus,
     paymentMethod: order.paymentMethod,
     createdAt: order.createdAt.toISOString(),

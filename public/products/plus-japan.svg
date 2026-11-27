@@ -1,75 +1,92 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="640" height="460" viewBox="0 0 640 460" fill="none">
-  <title>plus 日区成品号</title>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1200" height="860" viewBox="0 0 640 460">
+  <title>PLUS — Premium Digital</title>
   <defs>
-    <linearGradient id="surface" x1="101" y1="55" x2="531" y2="390" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#FAFBFC"/><stop offset=".28" stop-color="#F1F0F5"/><stop offset=".56" stop-color="#E3E4ED"/><stop offset=".8" stop-color="#F6F6FA"/><stop offset="1" stop-color="#D9DDE6"/>
+    <linearGradient id="card" x1="72" y1="48" x2="570" y2="410" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#222A4B"/>
+      <stop offset=".48" stop-color="#11182F"/>
+      <stop offset="1" stop-color="#080D1D"/>
     </linearGradient>
-    <linearGradient id="rim" x1="120" y1="58" x2="492" y2="395" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#FFFFFF"/><stop offset=".29" stop-color="#E4E2ED"/><stop offset=".58" stop-color="#8D91A9"/><stop offset=".8" stop-color="#FFFFFF"/><stop offset="1" stop-color="#A4A8BC"/>
+    <linearGradient id="border" x1="85" y1="52" x2="550" y2="410" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#A4B2FF" stop-opacity=".75"/>
+      <stop offset=".45" stop-color="#6675A9" stop-opacity=".16"/>
+      <stop offset="1" stop-color="#C6FF65" stop-opacity=".58"/>
     </linearGradient>
-    <radialGradient id="violet" cx="0" cy="0" r="1" gradientTransform="translate(476 199) rotate(160) scale(225 204)" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#BDB5F4" stop-opacity=".8"/><stop offset="1" stop-color="#EAE7FB" stop-opacity="0"/>
+    <linearGradient id="lime" x1="370" y1="130" x2="530" y2="310" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F0FFB7"/>
+      <stop offset=".32" stop-color="#C7FF58"/>
+      <stop offset=".7" stop-color="#8DDB36"/>
+      <stop offset="1" stop-color="#4D9D34"/>
+    </linearGradient>
+    <linearGradient id="limeSide" x1="385" y1="190" x2="530" y2="330" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#7BAF35"/>
+      <stop offset="1" stop-color="#345B35"/>
+    </linearGradient>
+    <linearGradient id="type" x1="100" y1="160" x2="350" y2="260" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFFFFF"/>
+      <stop offset=".58" stop-color="#E8ECFF"/>
+      <stop offset="1" stop-color="#A9B7E8"/>
+    </linearGradient>
+    <radialGradient id="aura" cx="0" cy="0" r="1" gradientTransform="translate(464 205) rotate(140) scale(220 190)" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#B8F84D" stop-opacity=".22"/>
+      <stop offset="1" stop-color="#B8F84D" stop-opacity="0"/>
     </radialGradient>
-    <radialGradient id="mint" cx="0" cy="0" r="1" gradientTransform="translate(539 285) rotate(-130) scale(180 125)" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#C5F4EB" stop-opacity=".95"/><stop offset="1" stop-color="#DCFAF5" stop-opacity="0"/>
+    <radialGradient id="blueGlow" cx="0" cy="0" r="1" gradientTransform="translate(160 350) rotate(-20) scale(270 150)" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#647CFF" stop-opacity=".24"/>
+      <stop offset="1" stop-color="#647CFF" stop-opacity="0"/>
     </radialGradient>
-    <linearGradient id="beam" x1="250" y1="90" x2="510" y2="300" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#FFFFFF" stop-opacity="0"/><stop offset=".43" stop-color="#FFFFFF" stop-opacity="0"/><stop offset=".54" stop-color="#FFFFFF" stop-opacity=".7"/><stop offset=".68" stop-color="#FFFFFF" stop-opacity="0"/>
-    </linearGradient>
-    <linearGradient id="chrome" x1="376" y1="140" x2="516" y2="283" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#F8F6FF"/><stop offset=".2" stop-color="#E3DFF3"/><stop offset=".35" stop-color="#ACA3CF"/><stop offset=".48" stop-color="#FAFBFF"/><stop offset=".56" stop-color="#CEDCF1"/><stop offset=".73" stop-color="#8C87B0"/><stop offset="1" stop-color="#E0DCEE"/>
-    </linearGradient>
-    <linearGradient id="depth" x1="385" y1="135" x2="521" y2="289" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#D1CCDF"/><stop offset=".35" stop-color="#79738E"/><stop offset=".6" stop-color="#B5ABC9"/><stop offset="1" stop-color="#605B75"/>
-    </linearGradient>
-    <linearGradient id="ink" x1="104" y1="154" x2="280" y2="267" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#252631"/><stop offset=".6" stop-color="#32313F"/><stop offset="1" stop-color="#625D77"/>
-    </linearGradient>
-    <filter id="emboss" x="-40%" y="-40%" width="190%" height="200%">
-      <feDropShadow dx="3" dy="12" stdDeviation="9" flood-color="#554878" flood-opacity=".25"/>
+    <filter id="cardShadow" x="0" y="0" width="700" height="520" filterUnits="userSpaceOnUse">
+      <feGaussianBlur stdDeviation="15"/>
     </filter>
-    <filter id="grain" x="0" y="0" width="100%" height="100%">
-      <feTurbulence type="fractalNoise" baseFrequency=".7" numOctaves="3" stitchTiles="stitch"/>
-      <feColorMatrix type="saturate" values="0"/>
-      <feComposite in2="SourceGraphic" operator="in"/>
+    <filter id="iconShadow" x="330" y="95" width="260" height="290" filterUnits="userSpaceOnUse">
+      <feGaussianBlur stdDeviation="13"/>
     </filter>
-    <clipPath id="face"><rect x="61" y="65" width="518" height="326" rx="25"/></clipPath>
-    <path id="plus" d="M428 139H456Q465 139 465 148V182H499Q508 182 508 191V219Q508 228 499 228H465V262Q465 271 456 271H428Q419 271 419 262V228H385Q376 228 376 219V191Q376 182 385 182H419V148Q419 139 428 139Z"/>
+    <clipPath id="clip"><rect x="60" y="55" width="520" height="350" rx="28"/></clipPath>
+    <pattern id="micro" width="22" height="22" patternUnits="userSpaceOnUse">
+      <circle cx="1.2" cy="1.2" r=".8" fill="#DDE4FF" fill-opacity=".12"/>
+    </pattern>
+    <path id="plusShape" d="M426 133H457C465 133 471 139 471 147V183H507C515 183 521 189 521 197V228C521 236 515 242 507 242H471V278C471 286 465 292 457 292H426C418 292 412 286 412 278V242H376C368 242 362 236 362 228V197C362 189 368 183 376 183H412V147C412 139 418 133 426 133Z"/>
   </defs>
-  <g transform="rotate(-7 320 230)">
+
+  <ellipse cx="320" cy="420" rx="230" ry="22" fill="#020611" opacity=".32" filter="url(#cardShadow)"/>
+  <g transform="rotate(-8 320 230)">
+    <rect x="61" y="64" width="520" height="350" rx="28" fill="#030817" opacity=".52"/>
+    <rect x="60" y="55" width="520" height="350" rx="28" fill="url(#card)"/>
+    <g clip-path="url(#clip)">
+      <rect x="60" y="55" width="520" height="350" fill="url(#aura)"/>
+      <rect x="60" y="55" width="520" height="350" fill="url(#blueGlow)"/>
+      <rect x="60" y="55" width="520" height="350" fill="url(#micro)"/>
+      <path d="M300 55H580V405H510C440 320 380 230 300 55Z" fill="#B6C3FF" opacity=".025"/>
+      <path d="M60 318C155 270 225 280 305 405H60V318Z" fill="#788BFF" opacity=".07"/>
+      <path d="M350 55L580 285" stroke="#E6EBFF" stroke-opacity=".07"/>
+      <path d="M390 55L580 245" stroke="#E6EBFF" stroke-opacity=".045"/>
+      <circle cx="460" cy="215" r="130" stroke="#D8FF8B" stroke-opacity=".10"/>
+      <circle cx="460" cy="215" r="160" stroke="#D8FF8B" stroke-opacity=".06"/>
+    </g>
+    <rect x="60.8" y="55.8" width="518.4" height="348.4" rx="27.2" stroke="url(#border)" stroke-width="1.6"/>
+    <path d="M83 84H210" stroke="#C8D1FF" stroke-opacity=".32" stroke-width="1.2"/>
+    <circle cx="83" cy="84" r="3" fill="#C8FF62"/>
+
+    <g font-family="Inter, SF Pro Display, Helvetica Neue, Arial, sans-serif">
+      <text x="100" y="113" fill="#AAB6DA" font-size="11" font-weight="650" letter-spacing="3.2">PLUS / DIGITAL</text>
+      <text x="95" y="255" fill="#020817" opacity=".42" font-size="111" font-style="italic" font-weight="850" letter-spacing="-8" transform="translate(2 8)">plus</text>
+      <text x="95" y="250" fill="url(#type)" font-size="111" font-style="italic" font-weight="850" letter-spacing="-8">plus</text>
+      <path d="M105 278H236" stroke="#C8FF62" stroke-width="4" stroke-linecap="round"/>
+      <text x="105" y="316" fill="#E8EDFF" font-size="18" font-weight="650" letter-spacing="3.1">MORE, MADE SIMPLE.</text>
+      <text x="105" y="348" fill="#8E9BBE" font-size="11" font-weight="500" letter-spacing="2.4">PREMIUM DIGITAL ACCESS</text>
+      <text x="105" y="377" fill="#667394" font-size="9" font-weight="600" letter-spacing="2.2">YOUR DIGITAL WORLD, UNLOCKED</text>
+    </g>
+
+    <g opacity=".6" transform="translate(0 0)">
+      <path d="M520 91L548 91" stroke="#C8FF62" stroke-width="2" stroke-linecap="round"/>
+      <path d="M534 77L534 105" stroke="#C8FF62" stroke-width="2" stroke-linecap="round"/>
+    </g>
     <g>
-      <rect x="61" y="69" width="518" height="326" rx="25" fill="#B0B1C1"/>
-      <rect x="61" y="65" width="518" height="326" rx="25" fill="url(#surface)"/>
+      <use xlink:href="#plusShape" transform="translate(8 13)" fill="#050B1B" opacity=".8" filter="url(#iconShadow)"/>
+      <use xlink:href="#plusShape" transform="translate(9 12)" fill="url(#limeSide)"/>
+      <use xlink:href="#plusShape" fill="url(#lime)" stroke="#F3FFC9" stroke-opacity=".9" stroke-width="1.5"/>
+      <path d="M428 139H456C461 139 465 143 465 148V187H505" stroke="#FFFFFF" stroke-opacity=".85" stroke-width="2.2" stroke-linecap="round"/>
+      <path d="M368 226Q368 236 378 236H418V277" stroke="#477A39" stroke-opacity=".45" stroke-width="2" stroke-linecap="round"/>
     </g>
-    <g clip-path="url(#face)">
-      <rect x="61" y="65" width="518" height="326" fill="url(#violet)"/>
-      <rect x="61" y="65" width="518" height="326" fill="url(#mint)"/>
-      <rect x="61" y="65" width="518" height="326" fill="url(#beam)"/>
-      <rect x="61" y="65" width="518" height="326" fill="#777" filter="url(#grain)" opacity=".045"/>
-      <path d="M334 65V391" stroke="#FFFFFF" stroke-opacity=".25"/>
-      <path d="M340 65V391" stroke="#AAA6BF" stroke-opacity=".08"/>
-    </g>
-    <rect x="61.75" y="65.75" width="516.5" height="324.5" rx="24.25" stroke="url(#rim)" stroke-width="1.5"/>
-    <rect x="65" y="69" width="510" height="318" rx="21" stroke="#FFF" stroke-opacity=".48" stroke-width=".7"/>
-    <g font-family="-apple-system, BlinkMacSystemFont, 'Helvetica Neue', 'PingFang SC', 'Microsoft YaHei', sans-serif">
-      <text x="101" y="115" fill="#656577" font-size="12" font-weight="500" letter-spacing="2.8">JAPAN EDITION</text>
-      <g transform="translate(489 94)">
-        <rect width="50" height="27" rx="13.5" fill="#FFFFFF" fill-opacity=".65" stroke="#FFFFFF"/>
-        <circle cx="14" cy="13.5" r="5" fill="#C95564"/>
-        <text x="26" y="18" fill="#505061" font-size="12" font-weight="600" letter-spacing="1">JP</text>
-      </g>
-      <text x="96" y="245" fill="#FFF" opacity=".8" font-size="110" font-weight="550" letter-spacing="-7" transform="translate(0 1)">plus</text>
-      <text x="96" y="245" fill="url(#ink)" font-size="110" font-weight="550" letter-spacing="-7">plus</text>
-      <text x="103" y="289" fill="#484855" font-size="24" font-weight="500" letter-spacing="3">日区成品号</text>
-      <path d="M103 329H537" stroke="#9C9CAD" stroke-opacity=".24"/>
-      <text x="103" y="357" fill="#777789" font-size="10" font-weight="500" letter-spacing="2.5">DIGITAL ACCOUNT</text>
-      <text x="537" y="357" fill="#777789" font-size="10" font-weight="500" letter-spacing="2" text-anchor="end">PLUS / JP</text>
-    </g>
-    <g filter="url(#emboss)">
-      <use href="#plus" transform="translate(4 7)" fill="url(#depth)" stroke="#898098" stroke-width=".6"/>
-      <use href="#plus" fill="url(#chrome)" stroke="#F8F6FF" stroke-width="1.4"/>
-      <path d="M430 143H456Q461 143 461 148V185H499" stroke="#FFF" stroke-opacity=".8" stroke-width="1.4" stroke-linecap="round"/>
-      <path d="M380 218Q380 224 385 224H423V261" stroke="#FFF" stroke-opacity=".6" stroke-width="1.2" stroke-linecap="round"/>
-    </g>
+    <path d="M88 385H552" stroke="#D9E1FF" stroke-opacity=".09"/>
   </g>
 </svg>

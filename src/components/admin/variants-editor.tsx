@@ -37,7 +37,7 @@ export function VariantsEditor({
             </span>
           </h3>
           <p className="mt-1 text-[13px] text-muted-foreground">
-            每个规格独立定价、独立库存。自动发货的规格需要有可售库存。
+            每个规格独立定价、独立库存。主站按划线原价展示；代理价区间为系统售价～划线原价。自动发货的规格需要有可售库存。
           </p>
         </div>
         <div className="flex items-center gap-3 text-[12px] text-muted-foreground">
@@ -123,7 +123,7 @@ export function VariantsEditor({
                   </div>
                 </label>
                 <label className="block">
-                  <span className="mb-1 block text-[12px] font-medium text-muted-foreground">划线原价（元）</span>
+                  <span className="mb-1 block text-[12px] font-medium text-muted-foreground">划线原价 / 主站价（元）</span>
                   <div className="relative">
                     <span className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-[12px] text-muted-foreground">¥</span>
                     <input
@@ -228,7 +228,7 @@ export function VariantsEditor({
                 </div>
               </label>
               <label className="block">
-                <span className="mb-1 block text-[12px] font-medium text-muted-foreground">划线原价（元）</span>
+                <span className="mb-1 block text-[12px] font-medium text-muted-foreground">划线原价 / 主站价（元）</span>
                 <div className="relative">
                   <span className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-[12px] text-muted-foreground">¥</span>
                   <input name="originalPrice" type="number" step="0.01" min="0" placeholder="选填" className={cn(input, "pl-6 font-mono")} />

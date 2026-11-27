@@ -26,8 +26,10 @@ export default async function AgentProductPage({ params, searchParams }: PagePro
   return (
     <ProductDetailView
       product={product}
-      homeHref={`/r/${code}`}
+      homeHref={`/r/${shop.entryCode}`}
       priceBadge={shop.priceCode?.name ? `价位码 · ${shop.priceCode.name}` : "专属价"}
+      couponCode={shop.priceCode?.code ?? shop.affiliate.code}
+      couponLabel={shop.priceCode?.name ? `价位码 · ${shop.priceCode.name}` : "代理专属价"}
     />
   );
 }

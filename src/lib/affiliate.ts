@@ -22,7 +22,7 @@ const {
 
 const randomInvite = customAlphabet("ABCDEFGHJKMNPQRSTUVWXYZ23456789", 4);
 const randomAffiliate = customAlphabet("ABCDEFGHJKMNPQRSTUVWXYZ23456789", 6);
-const randomPriceCode = customAlphabet("ABCDEFGHJKMNPQRSTUVWXYZ23456789", 8);
+const randomPriceCode = customAlphabet("ABCDEFGHJKMNPQRSTUVWXYZ23456789", 6);
 
 function newInviteCode() {
   return `${randomInvite()}-${randomInvite()}-${randomInvite()}`;
@@ -104,7 +104,8 @@ export async function redeemInvite(codeValue: string, email: string) {
     let codeValueNew = newAffiliateCode();
     for (let i = 0; i < 5; i++) {
       const [used] = await tx.select({ id: affiliates.id }).from(affiliates).where(eq(affiliates.code, codeValueNew));
-      if (!used) break;
+      const [usedPrice] = await tx.select({ id: priceCodes.id }).from(priceCodes).where(eq(priceCodes.code, codeValueNew));
+      if (!used && !usedPrice) break;
       codeValueNew = newAffiliateCode();
     }
 
@@ -245,33 +246,58 @@ type AgentShop = {
   affiliate: { id: number; code: string; status: string };
   /** 当前生效的价位码（null = 主价格） */
   priceCode: { id: number; code: string; name: string } | null;
+  /** 规范入口码：价位码优先，否则代理推广码，用于店铺内链接保持优惠 */
+  entryCode: string;
   products: PublicProduct[];
   /** variantId → 客户价与佣金口径 */
   prices: Map<number, VariantPriceInfo>;
 };
 
+type PriceCodeSummary = { id: number; code: string; name: string };
+
+type AgentEntry = {
+  affiliate: typeof affiliates.$inferSelect;
+  priceCode: PriceCodeSummary | null;
+  /** 规范入口码：价位码优先，否则代理推广码 */
+  entryCode: string;
+};
+
+/** 解析 /r/:code 入口：同时支持代理推广码和价位码，并兼容旧的 ?pc= 参数 */
+export async function resolveAgentEntry(
+  codeValue: string,
+  legacyPriceCode?: string,
+): Promise<AgentEntry | { invalid: true; reason: "unknown" | "disabled" }> {
+  const code = codeValue.trim().toUpperCase();
+  if (!code) return { invalid: true, reason: "unknown" };
+
+  const affiliate = await getAffiliateByCode(code);
+  if (affiliate) {
+    if (affiliate.status !== "active") return { invalid: true, reason: "disabled" };
+    const priceCode = legacyPriceCode ? await resolvePriceCode(affiliate.id, legacyPriceCode) : null;
+    const summary = priceCode ? { id: priceCode.id, code: priceCode.code, name: priceCode.name } : null;
+    return { affiliate, priceCode: summary, entryCode: summary?.code ?? affiliate.code };
+  }
+
+  const [priceCode] = await db.select().from(priceCodes).where(eq(priceCodes.code, code));
+  if (!priceCode) return { invalid: true, reason: "unknown" };
+  if (!priceCode.active) return { invalid: true, reason: "disabled" };
+  const owner = await getAffiliateById(priceCode.affiliateId);
+  if (!owner) return { invalid: true, reason: "unknown" };
+  if (owner.status !== "active") return { invalid: true, reason: "disabled" };
+  return {
+    affiliate: owner,
+    priceCode: { id: priceCode.id, code: priceCode.code, name: priceCode.name },
+    entryCode: priceCode.code,
+  };
+}
+
 export async function getAgentShop(
   code: string,
   priceCodeValue?: string,
 ): Promise<AgentShop | { invalid: true; reason: "unknown" | "disabled" }> {
-  const affiliate = await getAffiliateByCode(code);
-  if (!affiliate) return { invalid: true, reason: "unknown" };
-  if (affiliate.status !== "active") return { invalid: true, reason: "disabled" };
-
-  let priceCode: { id: number; code: string; name: string } | null = null;
-  if (priceCodeValue) {
-    const [row] = await db
-      .select()
-      .from(priceCodes)
-      .where(
-        and(
-          eq(priceCodes.code, priceCodeValue.trim().toUpperCase()),
-          eq(priceCodes.affiliateId, affiliate.id),
-          eq(priceCodes.active, true),
-        ),
-      );
-    priceCode = row ? { id: row.id, code: row.code, name: row.name } : null;
-  }
+  const entry = await resolveAgentEntry(code, priceCodeValue);
+  if ("invalid" in entry) return entry;
+  const { affiliate, priceCode } = entry;
 
   const products = await getListedProducts({ affiliateId: affiliate.id, priceCodeId: priceCode?.id ?? null });
   const variantIds = products.flatMap((p) => p.variants.map((v) => v.id));
@@ -279,6 +305,7 @@ export async function getAgentShop(
   return {
     affiliate: { id: affiliate.id, code: affiliate.code, status: affiliate.status },
     priceCode,
+    entryCode: entry.entryCode,
     products,
     prices,
   };
@@ -315,7 +342,7 @@ export async function resolvePriceCode(affiliateId: number, value?: string) {
 /* ---------------- 客户绑定 ---------------- */
 
 /** 结算时绑定客户：同一邮箱永久归属首位代理，后来者不改绑 */
-async function bindCustomer(affiliateId: number, email: string, orderId: number) {
+async function bindCustomer(affiliateId: number, email: string) {
   const normalized = email.trim().toLowerCase();
   if (!normalized) return;
   const [existing] = await db.select().from(customerBindings).where(eq(customerBindings.customerEmail, normalized));
@@ -324,9 +351,7 @@ async function bindCustomer(affiliateId: number, email: string, orderId: number)
       await db.insert(customerBindings).values({
         affiliateId,
         customerEmail: normalized,
-        firstOrderId: orderId,
         boundAt: new Date(),
-        lastOrderAt: new Date(),
       });
     } catch {
       // 并发下唯一键冲突：重新读取，只有同一代理才允许记回购
@@ -334,7 +359,7 @@ async function bindCustomer(affiliateId: number, email: string, orderId: number)
       if (raced?.affiliateId === affiliateId) {
         await db
           .update(customerBindings)
-          .set({ repeatBuy: true, lastOrderAt: new Date() })
+          .set({ repeatBuy: true })
           .where(eq(customerBindings.id, raced.id));
       }
     }
@@ -344,7 +369,7 @@ async function bindCustomer(affiliateId: number, email: string, orderId: number)
   if (existing.affiliateId !== affiliateId) return;
   await db
     .update(customerBindings)
-    .set({ repeatBuy: true, lastOrderAt: new Date() })
+    .set({ repeatBuy: true })
     .where(eq(customerBindings.id, existing.id));
 }
 
@@ -375,12 +400,10 @@ export async function listAgentCustomers(affiliateId: number) {
     customerEmail: r.customerEmail,
     remark: r.remark,
     boundAt: r.boundAt,
-    lastOrderAt: r.lastOrderAt,
     expiresAt: r.expiresAt,
     repeatBuy: r.repeatBuy,
     /** 绑定关系与会员状态分开：到期不等于解绑 */
     status: r.expiresAt && r.expiresAt.getTime() < now ? "会员已到期" : r.repeatBuy ? "回头客" : "绑定中",
-    firstOrderId: r.firstOrderId,
     orderCount: Number(statMap.get(r.customerEmail)?.n ?? 0),
     totalCents: Number(statMap.get(r.customerEmail)?.total ?? 0),
     entitlements: (entitlementMap.get(r.customerEmail) ?? []).map((e) => {
@@ -391,7 +414,6 @@ export async function listAgentCustomers(affiliateId: number) {
         variantName: e.variantName,
         orderNo: e.orderNo,
         expiresAt: e.expiresAt,
-        startsAt: e.startsAt,
         status: e.status === "ended" ? "ended" : left <= 0 ? "expired" : "active",
         daysLeft: Math.ceil(left / 86_400_000),
         isExpiringSoon: e.status !== "ended" && left > 0 && left <= 7 * 86_400_000,
@@ -424,7 +446,7 @@ export async function settleOrderCommissions(orderId: number, orderNo: string, s
       status: settleNow ? "settled" : "pending",
       settledAt: settleNow ? new Date() : null,
     });
-  if (settleNow) await bindCustomer(order.affiliateId, order.email, order.id);
+  if (settleNow) await bindCustomer(order.affiliateId, order.email);
 }
 
 /** 发货成功：人工发货规格的佣金在此结算并绑定客户 */
@@ -443,7 +465,7 @@ export async function settleDeliveredCommissions(orderId: number) {
   if (!changed) return;
   const [order] = await db.select().from(orders).where(eq(orders.id, orderId));
   if (order?.orderType === "affiliate" && order.affiliateId) {
-    await bindCustomer(order.affiliateId, order.email, order.id);
+    await bindCustomer(order.affiliateId, order.email);
   }
 }
 
@@ -592,6 +614,53 @@ export async function agentOrders(affiliateId: number, scope: "customers" | "sel
     .where(and(...cond)!)
     .orderBy(desc(orders.createdAt))
     .limit(100);
+}
+
+/** 代理订单列表：包含推广订单和自购订单，可按价位码来源筛选 */
+export async function listAffiliateOrders(opts: {
+  affiliateId: number;
+  scope?: "all" | "affiliate" | "self";
+  channel?: string;
+  page?: number;
+  pageSize?: number;
+}) {
+  const pageSize = Math.min(100, Math.max(1, opts.pageSize ?? 20));
+  const cond: SQL[] = [
+    eq(orders.affiliateId, opts.affiliateId),
+    inArray(orders.orderType, opts.scope === "affiliate" ? ["affiliate"] : opts.scope === "self" ? ["self"] : ["affiliate", "self"]),
+  ];
+  if (opts.channel && opts.channel !== "all") {
+    cond.push(eq(orders.priceCodeValue, opts.channel === "main" ? "" : opts.channel));
+  }
+  const where = and(...cond)!;
+  const [countRow] = await db.select({ n: sql<number>`count(*)` }).from(orders).where(where);
+  const total = Number(countRow?.n ?? 0);
+  const pages = Math.max(1, Math.ceil(total / pageSize));
+  const page = Math.min(pages, Math.max(1, Math.floor(opts.page ?? 1) || 1));
+  const rows = await db
+    .select({
+      id: orders.id,
+      orderNo: orders.orderNo,
+      orderType: orders.orderType,
+      productName: orders.productName,
+      variantName: orders.variantName,
+      quantity: orders.quantity,
+      unitPriceCents: orders.unitPriceCents,
+      totalCents: orders.totalCents,
+      commissionCents: orders.commissionCents,
+      status: orders.status,
+      src: orders.src,
+      email: orders.email,
+      paidAt: orders.paidAt,
+      createdAt: orders.createdAt,
+      priceCodeValue: orders.priceCodeValue,
+    })
+    .from(orders)
+    .where(where)
+    .orderBy(desc(orders.createdAt))
+    .limit(pageSize)
+    .offset((page - 1) * pageSize);
+  return { rows, total, page, pageSize, pages };
 }
 
 export async function agentOrderStats(affiliateId: number, scope: "customers" | "self") {
@@ -965,9 +1034,10 @@ export async function createPriceCode(affiliateId: number, name: string, copyCur
   }
 
   let code = newPriceCodeValue();
-  for (let i = 0; i < 5; i++) {
-    const [used] = await db.select({ id: priceCodes.id }).from(priceCodes).where(eq(priceCodes.code, code));
-    if (!used) break;
+  for (let i = 0; i < 8; i++) {
+    const [usedPrice] = await db.select({ id: priceCodes.id }).from(priceCodes).where(eq(priceCodes.code, code));
+    const [usedAffiliate] = await db.select({ id: affiliates.id }).from(affiliates).where(eq(affiliates.code, code));
+    if (!usedPrice && !usedAffiliate) break;
     code = newPriceCodeValue();
   }
 

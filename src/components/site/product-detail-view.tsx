@@ -12,10 +12,14 @@ export function ProductDetailView({
   product,
   homeHref = "/",
   priceBadge,
+  couponCode,
+  couponLabel,
 }: {
   product: PublicProduct;
   homeHref?: string;
   priceBadge?: string;
+  couponCode?: string;
+  couponLabel?: string;
 }) {
   const t = getDictionary();
 
@@ -81,7 +85,7 @@ export function ProductDetailView({
           {product.variants.length === 0 ? (
             <p className="py-10 text-center text-sm text-muted-foreground">{t.product.soldOut}</p>
           ) : (
-            <CheckoutPanel product={product} />
+            <CheckoutPanel product={product} initialCouponCode={couponCode} initialCouponLabel={couponLabel} />
           )}
         </div>
       </div>

@@ -57,7 +57,7 @@ export default async function AgentShopPage({ params, searchParams }: PageProps<
   return (
     <>
       <Hero announcement={""} logoUrl={site.logoUrl} />
-      <div className="mx-auto max-w-6xl px-4 sm:px-6">
+      <div id="products" className="mx-auto max-w-6xl scroll-mt-24 px-4 sm:px-6">
         <div className="mb-4 flex items-center gap-2 rounded-2xl border border-brand/15 bg-brand/[0.05] px-4 py-2.5 text-xs text-brand">
           <span className="size-1.5 rounded-full bg-brand" />
           {t.agent.priceNote}
@@ -67,7 +67,7 @@ export default async function AgentShopPage({ params, searchParams }: PageProps<
             </span>
           )}
         </div>
-        <AgentProductGrid products={shop.products} agentCode={shop.affiliate.code} priceCode={shop.priceCode?.code} />
+        <AgentProductGrid products={shop.products} entryCode={shop.entryCode} />
       </div>
     </>
   );

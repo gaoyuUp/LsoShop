@@ -21,6 +21,10 @@ type ProductFormValues = {
   warnings: string[];
   notes: { title: string; body: string }[];
   requireEmail: boolean;
+  buyerInputLabel: string;
+  buyerInputPlaceholder: string;
+  buyerInputHint: string;
+  buyerInputLength: number;
   isExpiring: boolean;
   validityDays: number;
   listed: boolean;
@@ -40,6 +44,10 @@ const EMPTY: ProductFormValues = {
   warnings: [],
   notes: [],
   requireEmail: true,
+  buyerInputLabel: "",
+  buyerInputPlaceholder: "",
+  buyerInputHint: "",
+  buyerInputLength: 0,
   isExpiring: false,
   validityDays: 30,
   listed: true,
@@ -73,6 +81,7 @@ export function ProductForm({
   const [validityDays, setValidityDays] = useState(values.validityDays || 30);
   const [listed, setListed] = useState(values.listed);
   const [theme, setTheme] = useState(values.theme || "violet");
+  const [showBuyerFields, setShowBuyerFields] = useState(false);
 
   function addNote() {
     setNotes((n) => [...n, { title: "", body: "" }]);
@@ -197,6 +206,86 @@ export function ProductForm({
               </Field>
             </div>
           </Section>
+
+          <section className="overflow-hidden rounded-2xl border border-foreground/[0.07] bg-background/70 backdrop-blur">
+            <button
+              type="button"
+              onClick={() => setShowBuyerFields((open) => !open)}
+              aria-expanded={showBuyerFields}
+              aria-controls="buyer-input-fields"
+              className="flex w-full items-start justify-between gap-3 p-4 text-left transition hover:bg-foreground/[0.015] sm:p-5"
+            >
+              <div>
+                <h3 className="flex flex-wrap items-center gap-1.5 text-sm font-semibold">
+                  <GripVertical className="size-3.5 text-muted-foreground/40" />
+                  下单附加信息
+                  <span className="rounded-full bg-foreground/[0.05] px-2 py-0.5 text-[11px] font-normal text-muted-foreground">
+                    选填
+                  </span>
+                </h3>
+                <p className="mt-1 text-[13px] leading-relaxed text-muted-foreground">
+                  {values.buyerInputLabel
+                    ? `已启用：${values.buyerInputLabel}`
+                    : "需要买家额外填写邀请码、账号等信息时展开配置；留空则不显示。"}
+                </p>
+              </div>
+              <span className="flex shrink-0 items-center gap-1 pt-0.5 text-[12px] text-muted-foreground">
+                {showBuyerFields ? "收起" : "展开"}
+                <ChevronDown className={cn("size-4 transition-transform", showBuyerFields && "rotate-180")} />
+              </span>
+            </button>
+            <div
+              id="buyer-input-fields"
+              className={cn(
+                "grid transition-all duration-300 ease-out",
+                showBuyerFields ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0",
+              )}
+            >
+              <div className="overflow-hidden">
+                <div className="border-t border-foreground/[0.06] p-4 sm:p-5">
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <Field label="字段名称" hint="例如：Muse 邀请码">
+                      <input
+                        name="buyerInputLabel"
+                        defaultValue={values.buyerInputLabel}
+                        maxLength={60}
+                        placeholder="留空则不启用"
+                        className={inputCls}
+                      />
+                    </Field>
+                    <Field label="输入框提示">
+                      <input
+                        name="buyerInputPlaceholder"
+                        defaultValue={values.buyerInputPlaceholder}
+                        maxLength={160}
+                        placeholder="请输入要充值的 Muse 邀请码"
+                        className={inputCls}
+                      />
+                    </Field>
+                    <Field label="验证码位数" hint="0 = 普通输入框；填 6 时显示 6 个独立输入框">
+                      <input
+                        name="buyerInputLength"
+                        type="number"
+                        min={0}
+                        max={12}
+                        defaultValue={values.buyerInputLength || 0}
+                        className={cn(inputCls, "font-mono")}
+                      />
+                    </Field>
+                    <Field label="填写说明" hint="展示在附加输入框下方">
+                      <input
+                        name="buyerInputHint"
+                        defaultValue={values.buyerInputHint}
+                        maxLength={200}
+                        placeholder="请确认信息填写正确，提交后不可修改"
+                        className={inputCls}
+                      />
+                    </Field>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
 
           {/* 购买须知 */}
           <Section

@@ -9,6 +9,8 @@ const Body = z.object({
   variantId: z.number().int().positive(),
   quantity: z.number().int().positive().max(1000),
   email: z.string().max(191).default(""),
+  buyerInput: z.string().max(255).default(""),
+  couponCode: z.string().max(16).default(""),
 });
 
 export async function POST(req: Request) {
@@ -17,20 +19,19 @@ export async function POST(req: Request) {
   const parsed = Body.safeParse(await req.json().catch(() => null));
   if (!parsed.success) return json({ error: "参数不正确" }, 400);
 
-  // 推广归因：httpOnly 归因 cookie（访问 /r/码 时由服务端校验后写入），客户端不可伪造代理价
+  // 价格归因只认本次下单携带的优惠码；未带码时按主站最高价。
+  // 已登录代理在自己主站下单时使用自己的推广码，保留自购价。
   const store = await cookies();
-  const [code, priceCode, ...srcParts] = (store.get(AFF_COOKIE)?.value ?? "").split(":");
+  const src = (store.get(AFF_COOKIE)?.value ?? "").split(":").slice(2).join(":") || undefined;
   const buyer = await getCurrentAffiliate();
-  // 已登录代理不带 /r 链接时，也按自己的代理价下单（自购不返佣）
-  const effectiveCode = code || buyer?.code || "";
+  const couponCode = parsed.data.couponCode.trim().toUpperCase() || buyer?.code || "";
 
   try {
     const result = await createOrder({
       ...parsed.data,
+      couponCode,
       clientIp: ip,
-      affiliateCode: effectiveCode || undefined,
-      priceCode: priceCode || undefined,
-      src: srcParts.join(":") || undefined,
+      src,
       buyerAffiliateId: buyer?.id ?? null,
     });
     return json(result);

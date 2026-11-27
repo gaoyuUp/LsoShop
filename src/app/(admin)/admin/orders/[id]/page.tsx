@@ -24,6 +24,7 @@ import {
 import { ConfirmSubmit } from "@/components/admin/confirm-submit";
 import { CopyButton } from "@/components/admin/copy-button";
 import { EmailStatusBadge, OrderStatusBadge } from "@/components/admin/badges";
+import { OrderSourceInfo } from "@/components/admin/order-source";
 import { SubmitButton } from "@/components/admin/submit-button";
 import {
   closeOrderAction,
@@ -67,7 +68,7 @@ export default async function AdminOrderDetailPage({ params, searchParams }: Pag
   const { id } = await params;
   const [data, mailStatus] = await Promise.all([getOrderDetail(Number(id)), getMailStatus()]);
   if (!data) notFound();
-  const { order, mails } = data;
+  const { order, mails, affiliate } = data;
   const sp = await searchParams;
 
   const notice = typeof sp.notice === "string" ? sp.notice : "";
@@ -164,19 +165,35 @@ export default async function AdminOrderDetailPage({ params, searchParams }: Pag
         </div>
       </section>
 
-      {order.orderType !== "normal" && (
-        <section className="rounded-2xl border border-brand/15 bg-brand/[0.04] p-4 text-[12px]">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="font-medium text-brand">{order.orderType === "self" ? "代理自购 · 不计佣金" : "代理推广订单"}</span>
-              {order.affiliateCode && <span className="rounded-full bg-background/60 px-2 py-0.5 font-mono text-[11px]">推广码 {order.affiliateCode}</span>}
-              {order.priceCodeValue && <span className="rounded-full bg-background/60 px-2 py-0.5 font-mono text-[11px]">价位码 {order.priceCodeValue}</span>}
-              {order.src && <span className="rounded-full bg-background/60 px-2 py-0.5 text-[11px]">src {order.src}</span>}
-            </div>
-            <div className="flex gap-4 font-mono text-[11px]"><span>系统价 ¥{formatPrice(order.systemPriceCents)}</span><span>成本 ¥{formatPrice(order.costPriceCents)}</span><span className="text-emerald-600 dark:text-emerald-400">佣金 ¥{formatPrice(order.commissionCents)}</span></div>
+      <section
+        className={cn(
+          "rounded-2xl border p-4 text-[12px]",
+          order.orderType === "normal"
+            ? "border-foreground/[0.07] bg-background/70"
+            : "border-brand/15 bg-brand/[0.04]",
+        )}
+      >
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-[11px] text-muted-foreground">订单来源</span>
+            <OrderSourceInfo
+              orderType={order.orderType}
+              affiliateId={order.affiliateId}
+              affiliateName={affiliate ? affiliate.nickname || affiliate.email : ""}
+              affiliateCode={order.affiliateCode}
+              priceCodeValue={order.priceCodeValue}
+              src={order.src}
+            />
           </div>
-        </section>
-      )}
+          {order.orderType !== "normal" && (
+            <div className="flex gap-4 font-mono text-[11px]">
+              <span>系统价 ¥{formatPrice(order.systemPriceCents)}</span>
+              <span>成本 ¥{formatPrice(order.costPriceCents)}</span>
+              <span className="text-emerald-600 dark:text-emerald-400">佣金 ¥{formatPrice(order.commissionCents)}</span>
+            </div>
+          )}
+        </div>
+      </section>
 
       <div className="grid gap-3 xl:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
         <div className="space-y-4">
@@ -224,6 +241,15 @@ export default async function AdminOrderDetailPage({ params, searchParams }: Pag
                     </div>
                   </div>
                 </div>
+                {order.buyerInput && (
+                  <div className="mt-2 rounded-lg border border-brand/15 bg-brand/[0.04] px-2.5 py-1.5 text-[12px]">
+                    <span className="text-muted-foreground">{order.buyerInputLabel || "下单信息"}</span>
+                    <div className="mt-0.5 flex items-center gap-1 font-mono text-[13px]">
+                      <span className="break-all">{order.buyerInput}</span>
+                      <CopyButton text={order.buyerInput} />
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </section>

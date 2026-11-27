@@ -18,11 +18,14 @@ export function SiteHeader({
   agent,
   siteName,
   logoUrl,
+  homeHref = "/",
 }: {
   support: SupportContacts;
   agent?: { code: string; email: string; nickname: string } | null;
   siteName: string;
   logoUrl?: string;
+  /** 代理店铺内保持当前入口码，切换导航不丢优惠 */
+  homeHref?: string;
 }) {
   const t = useT();
   const pathname = usePathname();
@@ -31,7 +34,11 @@ export function SiteHeader({
   useMotionValueEvent(scrollY, "change", (v) => setScrolled(v > 12));
 
   const links = [
-    { href: "/", label: t.nav.products, active: pathname === "/" || pathname.startsWith("/products/") },
+    {
+      href: homeHref,
+      label: t.nav.products,
+      active: pathname === "/" || pathname.startsWith("/products/") || pathname.startsWith("/r/"),
+    },
     { href: "/orders", label: t.nav.orders, active: pathname.startsWith("/orders") || pathname.startsWith("/order/") },
   ];
 
@@ -44,7 +51,7 @@ export function SiteHeader({
           scrolled ? "glass-strong" : "border border-transparent",
         )}
       >
-        <Link href="/" className="rounded-xl outline-offset-4">
+        <Link href={homeHref} className="rounded-xl outline-offset-4">
           <Wordmark name={siteName} logoUrl={logoUrl} />
         </Link>
 
@@ -85,7 +92,7 @@ export function SiteHeader({
       </div>
 
     </header>
-    <MobileBottomNav showPromote={Boolean(agent)} />
+    <MobileBottomNav showPromote={Boolean(agent)} homeHref={homeHref} />
     </>
   );
 }

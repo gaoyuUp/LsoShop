@@ -12,6 +12,8 @@ type PublicVariant = {
   description: string;
   priceCents: number;
   originalPriceCents: number;
+  /** 主站公开价：有划线原价用原价，否则用系统底价 */
+  listPriceCents: number;
   minQuantity: number;
   maxQuantity: number;
   deliveryMode: string;
@@ -38,10 +40,16 @@ export type PublicProduct = {
   warnings: string[];
   notes: { title: string; body: string }[];
   requireEmail: boolean;
+  buyerInputLabel: string;
+  buyerInputPlaceholder: string;
+  buyerInputHint: string;
+  buyerInputLength: number;
   isExpiring: boolean;
   validityDays: number;
   variants: PublicVariant[];
   minPriceCents: number;
+  /** 最低价规格对应的原价；主站最高价或代理价与最高价一致时为 0 */
+  compareAtPriceCents: number;
   totalStock: number | null;
 };
 
@@ -77,12 +85,15 @@ async function load(where?: ReturnType<typeof eq>, agent?: AgentShopContext) {
       .filter((v) => v.productId === p.id)
       .map<PublicVariant>((v) => {
         const info = agentMap?.get(v.id);
+        const listPriceCents = v.originalPriceCents > 0 ? Math.max(v.originalPriceCents, v.priceCents) : v.priceCents;
+        const useAgentPrice = Boolean(agentMap && v.affiliateEnabled && info);
         return {
           id: v.id,
           name: v.name,
           description: v.description,
-          priceCents: info ? info.priceCents : v.priceCents,
+          priceCents: useAgentPrice && info ? info.priceCents : listPriceCents,
           originalPriceCents: v.originalPriceCents,
+          listPriceCents,
           minQuantity: v.minQuantity,
           maxQuantity: v.maxQuantity,
           deliveryMode: v.deliveryMode,
@@ -90,6 +101,10 @@ async function load(where?: ReturnType<typeof eq>, agent?: AgentShopContext) {
           stock: v.deliveryMode === "auto" ? (stock.get(v.id) ?? 0) : null,
         };
       });
+    const cheapest = vs.reduce<PublicVariant | null>(
+      (best, variant) => (!best || variant.priceCents < best.priceCents ? variant : best),
+      null,
+    );
     const hasManual = vs.some((v) => v.stock === null);
     return {
       id: p.id,
@@ -108,10 +123,16 @@ async function load(where?: ReturnType<typeof eq>, agent?: AgentShopContext) {
       warnings: p.warnings ?? [],
       notes: p.notes ?? [],
       requireEmail: p.requireEmail,
+      buyerInputLabel: p.buyerInputLabel,
+      buyerInputPlaceholder: p.buyerInputPlaceholder,
+      buyerInputHint: p.buyerInputHint,
+      buyerInputLength: p.buyerInputLength,
       isExpiring: p.isExpiring,
       validityDays: p.validityDays,
       variants: vs,
-      minPriceCents: vs.length ? Math.min(...vs.map((v) => v.priceCents)) : 0,
+      minPriceCents: cheapest?.priceCents ?? 0,
+      compareAtPriceCents:
+        cheapest && cheapest.listPriceCents > cheapest.priceCents ? cheapest.listPriceCents : 0,
       totalStock: hasManual ? null : vs.reduce((s, v) => s + (v.stock ?? 0), 0),
     };
   });

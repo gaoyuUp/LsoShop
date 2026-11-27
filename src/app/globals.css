@@ -334,12 +334,6 @@
 }
 
 .brand-gradient { background-image: linear-gradient(120deg, var(--brand), var(--brand-2)); }
-.brand-text {
-  background-image: linear-gradient(120deg, var(--brand), var(--brand-2));
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-}
 
 /* Logo 描边动画 */
 .logo-draw path.stroke {

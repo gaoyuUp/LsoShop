@@ -2,7 +2,7 @@ import "server-only";
 import { and, asc, count, desc, eq, gte, inArray, like, lt, or, sql, type SQL } from "drizzle-orm";
 import { db, schema } from "@/db";
 
-const { orders, products, productVariants, inventoryItems, emailLogs, productCategories, orders: orderTable } = schema;
+const { orders, products, productVariants, inventoryItems, emailLogs, productCategories, affiliates, orders: orderTable } = schema;
 
 /** 北京时间当天 0 点对应的 UTC 时间 */
 export function startOfShanghaiDay(offsetDays = 0) {
@@ -256,14 +256,26 @@ export async function getAdminProduct(id: number) {
   };
 }
 
-export async function listOrders(opts: { status?: string; q?: string; page?: number }) {
+export async function listOrders(opts: { status?: string; q?: string; source?: string; page?: number }) {
   const page = Math.max(1, opts.page ?? 1);
   const pageSize = 20;
   const cond: SQL[] = [];
   if (opts.status && opts.status !== "all") cond.push(eq(orders.status, opts.status));
+  if (opts.source === "normal" || opts.source === "affiliate" || opts.source === "self") {
+    cond.push(eq(orders.orderType, opts.source));
+  }
   if (opts.q) {
     const q = `%${opts.q.trim()}%`;
-    cond.push(or(like(orders.orderNo, q), like(orders.email, q), like(orders.productName, q))!);
+    cond.push(
+      or(
+        like(orders.orderNo, q),
+        like(orders.email, q),
+        like(orders.productName, q),
+        like(orders.buyerInput, q),
+        like(orders.affiliateCode, q),
+        like(orders.priceCodeValue, q),
+      )!,
+    );
   }
   const where = cond.length ? and(...cond) : undefined;
   const [countRow] = await db.select({ n: sql<number>`count(*)` }).from(orders).where(where);
@@ -274,20 +286,49 @@ export async function listOrders(opts: { status?: string; q?: string; page?: num
     .orderBy(desc(orders.createdAt))
     .limit(pageSize)
     .offset((page - 1) * pageSize);
+
+  const affiliateIds = [...new Set(rows.map((row) => row.affiliateId).filter((id): id is number => id !== null))];
+  const agentRows = affiliateIds.length
+    ? await db
+        .select({ id: affiliates.id, nickname: affiliates.nickname, email: affiliates.email })
+        .from(affiliates)
+        .where(inArray(affiliates.id, affiliateIds))
+    : [];
+  const agentMap = new Map(agentRows.map((row) => [row.id, row]));
+
   const total = Number(countRow?.n ?? 0);
-  return { rows, page, pageSize, total, pages: Math.max(1, Math.ceil(total / pageSize)) };
+  return {
+    rows: rows.map((row) => {
+      const agent = row.affiliateId ? agentMap.get(row.affiliateId) : null;
+      return {
+        ...row,
+        agentName: agent ? agent.nickname || agent.email : "",
+        agentEmail: agent?.email ?? "",
+      };
+    }),
+    page,
+    pageSize,
+    total,
+    pages: Math.max(1, Math.ceil(total / pageSize)),
+  };
 }
 
 export async function getOrderDetail(id: number) {
   const [order] = await db.select().from(orders).where(eq(orders.id, id));
   if (!order) return null;
+  const [affiliate] = order.affiliateId
+    ? await db
+        .select({ id: affiliates.id, nickname: affiliates.nickname, email: affiliates.email, code: affiliates.code })
+        .from(affiliates)
+        .where(eq(affiliates.id, order.affiliateId))
+    : [];
   const mails = await db
     .select()
     .from(emailLogs)
     .where(eq(emailLogs.orderId, id))
     .orderBy(desc(emailLogs.createdAt))
     .limit(20);
-  return { order, mails };
+  return { order, mails, affiliate: affiliate ?? null };
 }
 
 export async function listInventory(opts: { variantId?: number; status?: string; page?: number }) {

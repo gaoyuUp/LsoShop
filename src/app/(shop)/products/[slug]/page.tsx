@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { connection } from "next/server";
 import { ProductDetailView } from "@/components/site/product-detail-view";
 import { getProductBySlug } from "@/lib/catalog";
-import { getAgentContext } from "@/lib/agent-context";
+import { getAgentPricingContext } from "@/lib/agent-context";
 import { absoluteUrl, plainText, serializeJsonLd, siteUrl } from "@/lib/seo";
 import { getSiteConfig } from "@/lib/site-config";
 
@@ -54,8 +54,8 @@ export async function generateMetadata({ params }: PageProps<"/products/[slug]">
 export default async function ProductPage({ params }: PageProps<"/products/[slug]">) {
   await connection();
   const { slug } = await params;
-  const [ctx, site] = await Promise.all([getAgentContext(), getSiteConfig()]);
-  const agent = ctx.affiliateId ? { affiliateId: ctx.affiliateId, priceCodeId: ctx.priceCodeId } : undefined;
+  const [ctx, site] = await Promise.all([getAgentPricingContext(), getSiteConfig()]);
+  const agent = ctx.affiliateId ? { affiliateId: ctx.affiliateId, priceCodeId: null } : undefined;
   const product = await getProductBySlug(slug, agent);
   if (!product) notFound();
 

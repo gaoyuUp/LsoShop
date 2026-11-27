@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, Trash2, UserRound } from "lucide-react";
+import { ArrowLeft, ShoppingBag, Trash2, UserRound } from "lucide-react";
 import { ConfirmSubmit } from "@/components/admin/confirm-submit";
+import { AgentLoginLogsDialog } from "@/components/admin/agent-login-logs-dialog";
 import { CopyButton } from "@/components/agent/copy-button";
 import { deleteAffiliateAction, toggleAffiliateAction } from "@/lib/actions/admin-affiliates";
 import { getAdminAffiliateDetail } from "@/lib/affiliate";
@@ -29,7 +30,36 @@ export default async function AdminAgentDetailPage({ params }: PageProps<"/admin
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <form action={toggleAffiliateAction}><input type="hidden" name="id" value={affiliate.id} /><input type="hidden" name="status" value={affiliate.status === "active" ? "disabled" : "active"} /><button className="h-9 rounded-lg border border-foreground/10 px-3 text-xs text-muted-foreground hover:text-rose-500">{affiliate.status === "active" ? "停用代理" : "启用代理"}</button></form>
+          <AgentLoginLogsDialog
+            affiliateId={affiliate.id}
+            affiliateName={affiliate.nickname || affiliate.email}
+            label="登录记录"
+            className="h-9 rounded-lg border border-foreground/10 px-3 text-xs text-muted-foreground hover:bg-foreground/[0.03] hover:text-foreground"
+          />
+          <Link
+            href={`/admin/agents/${affiliate.id}/orders`}
+            className="inline-flex h-9 items-center gap-1 rounded-lg border border-foreground/10 px-3 text-xs text-muted-foreground transition hover:bg-foreground/[0.03] hover:text-foreground"
+          >
+            <ShoppingBag className="size-3.5" />
+            代理订单
+          </Link>
+          <form action={toggleAffiliateAction}>
+            <input type="hidden" name="id" value={affiliate.id} />
+            <input type="hidden" name="status" value={affiliate.status === "active" ? "disabled" : "active"} />
+            <ConfirmSubmit
+              message={
+                affiliate.status === "active"
+                  ? `停用后「${affiliate.nickname || affiliate.email}」将无法登录推广后台，其推广链接也不再按代理价归因；历史订单、佣金和客户绑定不受影响。`
+                  : `启用后「${affiliate.nickname || affiliate.email}」可以重新登录推广后台，推广链接和代理价恢复生效。`
+              }
+              dialogTitle={affiliate.status === "active" ? "停用代理？" : "启用代理？"}
+              confirmText={affiliate.status === "active" ? "确认停用" : "确认启用"}
+              tone={affiliate.status === "active" ? "danger" : "success"}
+              className="h-9 rounded-lg border border-foreground/10 px-3 text-xs text-muted-foreground transition hover:text-amber-600"
+            >
+              {affiliate.status === "active" ? "停用代理" : "启用代理"}
+            </ConfirmSubmit>
+          </form>
           <form action={deleteAffiliateAction}>
             <input type="hidden" name="id" value={affiliate.id} />
             <ConfirmSubmit message={`删除代理「${affiliate.nickname || affiliate.email}」？
@@ -56,7 +86,12 @@ export default async function AdminAgentDetailPage({ params }: PageProps<"/admin
       </div>
 
       <section className="rounded-2xl border border-foreground/[0.07] bg-background/70 p-4">
-        <h2 className="text-sm font-semibold">客户订单</h2>
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <h2 className="text-sm font-semibold">最近推广订单</h2>
+          <Link href={`/admin/agents/${affiliate.id}/orders`} className="inline-flex items-center gap-1 text-[11px] text-brand hover:underline">
+            查看全部代理订单 <ShoppingBag className="size-3" />
+          </Link>
+        </div>
         <div className="mt-3 overflow-x-auto"><table className="w-full min-w-[700px] text-left text-[11px]"><thead className="text-muted-foreground"><tr><th className="px-2 py-1.5">订单号</th><th className="px-2 py-1.5">商品</th><th className="px-2 py-1.5">金额</th><th className="px-2 py-1.5">佣金</th><th className="px-2 py-1.5">状态</th><th className="px-2 py-1.5">时间</th></tr></thead><tbody>{orders.length === 0 ? <tr><td colSpan={6} className="py-5 text-center text-muted-foreground">暂无推广订单</td></tr> : orders.map((o) => <tr key={o.id} className="border-t border-foreground/[0.04]"><td className="px-2 py-2 font-mono">{o.orderNo}</td><td className="px-2 py-2">{o.productName}<div className="text-[10px] text-muted-foreground">{o.variantName} × {o.quantity}</div></td><td className="px-2 py-2">¥{formatPrice(o.totalCents)}</td><td className="px-2 py-2 text-emerald-600 dark:text-emerald-400">¥{formatPrice(o.commissionCents)}</td><td className="px-2 py-2">{o.status}</td><td className="px-2 py-2 text-muted-foreground">{new Date(o.createdAt).toLocaleDateString("zh-CN", { timeZone: "Asia/Shanghai" })}</td></tr>)}</tbody></table></div>
       </section>
 

@@ -64,6 +64,12 @@ export const products = mysqlTable(
     /** 购买须知（标题 + 内容） */
     notes: json("notes").$type<ProductNote[]>().notNull().default([]),
     requireEmail: boolean("require_email").notNull().default(true),
+    /** 下单时需要买家额外填写的信息；label 为空表示不需要 */
+    buyerInputLabel: varchar("buyer_input_label", { length: 60 }).notNull().default(""),
+    buyerInputPlaceholder: varchar("buyer_input_placeholder", { length: 160 }).notNull().default(""),
+    buyerInputHint: varchar("buyer_input_hint", { length: 200 }).notNull().default(""),
+    /** > 0 时前台按固定长度的分格验证码输入框展示 */
+    buyerInputLength: int("buyer_input_length").notNull().default(0),
     /** 是否属于会过期的会员/订阅商品 */
     isExpiring: boolean("is_expiring").notNull().default(false),
     /** 有效期天数，0 表示不设置到期 */
@@ -132,6 +138,9 @@ export const orders = mysqlTable(
     /** 查询口令的 SHA-256 */
     tokenHash: varchar("token_hash", { length: 64 }).notNull(),
     email: varchar("email", { length: 191 }).notNull().default(""),
+    /** 下单时要求买家填写的信息快照（如 Muse 邀请码） */
+    buyerInputLabel: varchar("buyer_input_label", { length: 60 }).notNull().default(""),
+    buyerInput: varchar("buyer_input", { length: 255 }).notNull().default(""),
     productId: int("product_id").notNull(),
     variantId: int("variant_id").notNull(),
     productName: varchar("product_name", { length: 120 }).notNull(),
@@ -332,6 +341,30 @@ export const affiliateClicks = mysqlTable(
   ],
 );
 
+/** 代理登录记录：管理员后台查看登录时间、IP 与地区 */
+export const affiliateLoginLogs = mysqlTable(
+  "affiliate_login_logs",
+  {
+    id: bigint("id", { mode: "number" }).autoincrement().primaryKey(),
+    affiliateId: int("affiliate_id").notNull(),
+    email: varchar("email", { length: 191 }).notNull(),
+    ip: varchar("ip", { length: 64 }).notNull().default(""),
+    countryCode: varchar("country_code", { length: 8 }).notNull().default(""),
+    countryName: varchar("country_name", { length: 80 }).notNull().default(""),
+    region: varchar("region", { length: 80 }).notNull().default(""),
+    city: varchar("city", { length: 80 }).notNull().default(""),
+    isp: varchar("isp", { length: 120 }).notNull().default(""),
+    userAgent: varchar("user_agent", { length: 500 }).notNull().default(""),
+    /** login | activate */
+    method: varchar("method", { length: 16 }).notNull().default("login"),
+    createdAt: createdAt(),
+  },
+  (t) => [
+    index("idx_login_logs_affiliate").on(t.affiliateId, t.createdAt),
+    index("idx_login_logs_created").on(t.createdAt),
+  ],
+);
+
 /** 客户绑定：开通账号邮箱永久归属首位推广代理 */
 export const customerBindings = mysqlTable(
   "customer_bindings",
@@ -340,13 +373,10 @@ export const customerBindings = mysqlTable(
     affiliateId: int("affiliate_id").notNull(),
     /** 客户收件/开通账号邮箱（小写） */
     customerEmail: varchar("customer_email", { length: 191 }).notNull(),
-    /** 首次绑定订单 */
-    firstOrderId: bigint("first_order_id", { mode: "number" }),
     /** 是否已经产生第二笔及以上的成交 */
     repeatBuy: boolean("repeat_buy").notNull().default(false),
     /** 预留的会员到期时间；空 = 未设置，不影响推广绑定 */
     expiresAt: datetime("expires_at", { mode: "date", fsp: 3 }),
-    lastOrderAt: datetime("last_order_at", { mode: "date", fsp: 3 }),
     remark: varchar("remark", { length: 200 }).notNull().default(""),
     boundAt: datetime("bound_at", { mode: "date", fsp: 3 }).notNull(),
     createdAt: createdAt(),
@@ -367,10 +397,8 @@ export const customerEntitlements = mysqlTable(
     customerEmail: varchar("customer_email", { length: 191 }).notNull(),
     orderId: int("order_id").notNull(),
     orderNo: varchar("order_no", { length: 32 }).notNull(),
-    productId: int("product_id").notNull(),
     productName: varchar("product_name", { length: 120 }).notNull(),
     variantName: varchar("variant_name", { length: 120 }).notNull(),
-    startsAt: datetime("starts_at", { mode: "date", fsp: 3 }).notNull(),
     expiresAt: datetime("expires_at", { mode: "date", fsp: 3 }).notNull(),
     /** active | expired | ended */
     status: varchar("status", { length: 16 }).notNull().default("active"),
@@ -454,17 +482,3 @@ export const affiliateEmailCodes = mysqlTable(
     index("idx_email_code_expires").on(t.expiresAt),
   ],
 );
-
-export type Product = typeof products.$inferSelect;
-export type ProductCategory = typeof productCategories.$inferSelect;
-export type ProductVariant = typeof productVariants.$inferSelect;
-export type Order = typeof orders.$inferSelect;
-export type InventoryItem = typeof inventoryItems.$inferSelect;
-export type EmailLog = typeof emailLogs.$inferSelect;
-export type Affiliate = typeof affiliates.$inferSelect;
-export type AffiliateInvite = typeof affiliateInvites.$inferSelect;
-export type PriceCode = typeof priceCodes.$inferSelect;
-export type AffiliatePrice = typeof affiliatePricing.$inferSelect;
-export type Commission = typeof commissions.$inferSelect;
-export type CustomerEntitlement = typeof customerEntitlements.$inferSelect;
-export type Withdrawal = typeof withdrawals.$inferSelect;

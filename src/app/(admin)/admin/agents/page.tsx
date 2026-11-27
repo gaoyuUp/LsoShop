@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Inbox, Plus, Search, Ticket, Trash2, Users } from "lucide-react";
+import { Inbox, Plus, Search, ShoppingBag, Ticket, Trash2, Users } from "lucide-react";
 import { CopyButton } from "@/components/agent/copy-button";
+import { AgentLoginLogsDialog } from "@/components/admin/agent-login-logs-dialog";
 import { ConfirmSubmit } from "@/components/admin/confirm-submit";
 import { Pagination } from "@/components/admin/pagination";
 import {
@@ -123,7 +124,19 @@ export default async function AdminAgentsPage({ searchParams }: PageProps<"/admi
                     <td className="px-2 py-2.5 text-right">
                       <div className="flex items-center justify-end gap-2">
                         <CopyButton value={link} label="复制链接" />
-                        {invite.status === "unused" && <form action={disableInviteAction}><input type="hidden" name="id" value={invite.id} /><button type="submit" className="text-[11px] text-muted-foreground hover:text-amber-600">停用</button></form>}
+                        {invite.status === "unused" && (
+                          <form action={disableInviteAction}>
+                            <input type="hidden" name="id" value={invite.id} />
+                            <ConfirmSubmit
+                              message={`停用后邀请码「${invite.code}」的开通链接会立即失效，且不能恢复使用。`}
+                              dialogTitle="停用邀请码？"
+                              confirmText="确认停用"
+                              className="text-[11px] text-muted-foreground hover:text-amber-600"
+                            >
+                              停用
+                            </ConfirmSubmit>
+                          </form>
+                        )}
                         {deletable && (
                           <form action={deleteInviteAction}>
                             <input type="hidden" name="id" value={invite.id} />
@@ -164,8 +177,29 @@ export default async function AdminAgentsPage({ searchParams }: PageProps<"/admi
                   <td className="px-2 py-2.5">{agent.customers}</td><td className="px-2 py-2.5">{agent.orderCount}</td>
                   <td className="px-2 py-2.5 font-mono">¥{formatPrice(agent.revenue)}</td><td className="px-2 py-2.5 font-mono">¥{formatPrice(agent.withdrawable)}</td><td className="px-2 py-2.5 font-mono text-muted-foreground">¥{formatPrice(agent.pendingCommission)}</td>
                   <td className="px-2 py-2.5 text-right">
-                    <div className="flex items-center justify-end gap-2">
-                      <form action={toggleAffiliateAction}><input type="hidden" name="id" value={agent.id} /><input type="hidden" name="status" value={agent.status === "active" ? "disabled" : "active"} /><input type="hidden" name="fromList" value="1" /><button type="submit" className="text-[11px] text-muted-foreground hover:text-amber-600">{agent.status === "active" ? "停用" : "启用"}</button></form>
+                      <div className="flex items-center justify-end gap-2">
+                        <AgentLoginLogsDialog affiliateId={agent.id} affiliateName={agent.nickname || agent.email} />
+                        <Link href={`/admin/agents/${agent.id}/orders`} className="inline-flex items-center gap-0.5 text-[11px] text-muted-foreground hover:text-foreground">
+                          <ShoppingBag className="size-3" /> 订单
+                        </Link>
+                        <form action={toggleAffiliateAction}>
+                          <input type="hidden" name="id" value={agent.id} />
+                          <input type="hidden" name="status" value={agent.status === "active" ? "disabled" : "active"} />
+                          <input type="hidden" name="fromList" value="1" />
+                          <ConfirmSubmit
+                            message={
+                              agent.status === "active"
+                                ? `停用后「${agent.nickname || agent.email}」将无法登录推广后台，其推广链接也不再按代理价归因；历史订单、佣金和客户绑定不受影响。`
+                                : `启用后「${agent.nickname || agent.email}」可以重新登录推广后台，推广链接和代理价恢复生效。`
+                            }
+                            dialogTitle={agent.status === "active" ? "停用代理？" : "启用代理？"}
+                            confirmText={agent.status === "active" ? "确认停用" : "确认启用"}
+                            tone={agent.status === "active" ? "danger" : "success"}
+                            className="text-[11px] text-muted-foreground hover:text-amber-600"
+                          >
+                            {agent.status === "active" ? "停用" : "启用"}
+                          </ConfirmSubmit>
+                        </form>
                       <form action={deleteAffiliateAction}>
                         <input type="hidden" name="id" value={agent.id} />
                         <ConfirmSubmit message={`删除代理「${agent.nickname || agent.email}」？\n\n只有没有订单、客户、佣金和提现记录的代理才能删除；已有业务数据请使用停用。`} dialogTitle="删除代理账号" confirmText="确认删除" className="inline-flex items-center gap-0.5 text-[11px] text-muted-foreground hover:text-rose-500">

@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { cookies } from "next/headers";
 import { AFFILIATE_COOKIE_OPTIONS, AFF_COOKIE } from "@/lib/agent-context";
-import { getAffiliateByCode, resolvePriceCode, recordClick } from "@/lib/affiliate";
+import { recordClick, resolveAgentEntry } from "@/lib/affiliate";
 import { clientIp, json } from "@/lib/http";
 import { getCurrentAffiliate } from "@/lib/auth/affiliate-server";
 
@@ -19,19 +19,15 @@ export async function POST(req: Request) {
   if (!parsed.success) return json({ ok: false });
   const { code, priceCode, src, visitor } = parsed.data;
 
-  const affiliate = await getAffiliateByCode(code);
-  if (!affiliate || affiliate.status !== "active") {
+  const affiliateEntry = await resolveAgentEntry(code, priceCode);
+  if ("invalid" in affiliateEntry) {
     // 无效 / 已停用：清除可能残留的归因
     const store = await cookies();
     store.delete(AFF_COOKIE);
     return json({ ok: false, valid: false });
   }
-
-  let priceCodeId: number | null = null;
-  if (priceCode) {
-    const pc = await resolvePriceCode(affiliate.id, priceCode);
-    priceCodeId = pc?.id ?? null;
-  }
+  const affiliate = affiliateEntry.affiliate;
+  const priceCodeId = affiliateEntry.priceCode?.id ?? null;
 
   const ip = await clientIp();
   const visitorKey = (visitor || ip || "").slice(0, 64);
@@ -43,7 +39,7 @@ export async function POST(req: Request) {
   const store = await cookies();
   store.set(
     AFF_COOKIE,
-    [affiliate.code, priceCode ?? "", src ?? ""].join(":"),
+    [affiliate.code, affiliateEntry.priceCode?.code ?? "", src ?? ""].join(":"),
     AFFILIATE_COOKIE_OPTIONS,
   );
   return json({ ok: true, valid: true, code: affiliate.code });

@@ -10,7 +10,7 @@ const NAV = [
   { href: "/promote", label: "推广中心", icon: Megaphone, match: (p: string) => p.startsWith("/promote") },
 ];
 
-export function MobileBottomNav({ showPromote = false }: { showPromote?: boolean }) {
+export function MobileBottomNav({ showPromote = false, homeHref = "/" }: { showPromote?: boolean; homeHref?: string }) {
   const pathname = usePathname();
   const items = showPromote ? NAV : NAV.slice(0, 2);
 
@@ -20,10 +20,11 @@ export function MobileBottomNav({ showPromote = false }: { showPromote?: boolean
         {items.map((item) => {
           const active = item.match(pathname);
           const Icon = item.icon;
+          const href = item.href === "/" ? homeHref : item.href;
           return (
             <Link
               key={item.href}
-              href={item.href}
+              href={href}
               aria-current={active ? "page" : undefined}
               className={cn(
                 "relative flex h-10 min-w-0 flex-1 flex-col items-center justify-center gap-0 rounded-[17px] text-[10px] transition-colors",

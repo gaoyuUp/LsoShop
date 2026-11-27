@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { EmailStatusBadge, OrderStatusBadge } from "@/components/admin/badges";
 import { CopyButton } from "@/components/admin/copy-button";
+import { OrderSourceInfo } from "@/components/admin/order-source";
 import { getOrderSummary, listOrders } from "@/lib/admin-data";
 import { formatDateTime, formatPrice } from "@/lib/format";
 import { cn } from "@/lib/utils";
@@ -29,15 +30,23 @@ const TABS = [
   { value: "refunded", label: "已退款" },
 ] as const;
 
+const SOURCES = [
+  { value: "all", label: "全部来源" },
+  { value: "normal", label: "主站订单" },
+  { value: "affiliate", label: "代理推广" },
+  { value: "self", label: "代理自购" },
+] as const;
+
 export default async function AdminOrdersPage({ searchParams }: PageProps<"/admin/orders">) {
   await connection();
   const sp = await searchParams;
   const status = typeof sp.status === "string" ? sp.status : "all";
   const q = typeof sp.q === "string" ? sp.q : "";
+  const source = typeof sp.source === "string" && SOURCES.some((item) => item.value === sp.source) ? sp.source : "all";
   const page = Math.max(1, Number(typeof sp.page === "string" ? sp.page : 1) || 1);
   const [summary, list] = await Promise.all([
     getOrderSummary(),
-    listOrders({ status, q, page }),
+    listOrders({ status, q, source, page }),
   ]);
 
   const counts: Record<string, number> = {
@@ -52,6 +61,7 @@ export default async function AdminOrdersPage({ searchParams }: PageProps<"/admi
   const pageHref = (p: number) => {
     const params = new URLSearchParams();
     if (status !== "all") params.set("status", status);
+    if (source !== "all") params.set("source", source);
     if (q) params.set("q", q);
     if (p > 1) params.set("page", String(p));
     const s = params.toString();
@@ -86,6 +96,7 @@ export default async function AdminOrdersPage({ searchParams }: PageProps<"/admi
               const active = status === t.value;
               const params = new URLSearchParams();
               if (t.value !== "all") params.set("status", t.value);
+              if (source !== "all") params.set("source", source);
               if (q) params.set("q", q);
               const href = `/admin/orders${params.toString() ? `?${params}` : ""}`;
               return (
@@ -115,17 +126,28 @@ export default async function AdminOrdersPage({ searchParams }: PageProps<"/admi
               <input
                 name="q"
                 defaultValue={q}
-                placeholder="订单号 / 邮箱 / 商品"
-                className="h-8 w-44 rounded-lg border border-foreground/10 bg-background pl-7 pr-2 text-[12px] outline-none transition placeholder:text-muted-foreground/60 focus:border-transparent focus:ring-[1.5px] focus:ring-brand sm:w-52"
+                placeholder="订单号 / 邮箱 / 商品 / 推广码"
+                className="h-8 w-44 rounded-lg border border-foreground/10 bg-background pl-7 pr-2 text-[12px] outline-none transition placeholder:text-muted-foreground/60 focus:border-transparent focus:ring-[1.5px] focus:ring-brand sm:w-56"
               />
             </div>
+            <select
+              name="source"
+              defaultValue={source}
+              className="h-8 rounded-lg border border-foreground/10 bg-background px-2 text-[12px] outline-none transition focus:border-transparent focus:ring-[1.5px] focus:ring-brand"
+            >
+              {SOURCES.map((item) => (
+                <option key={item.value} value={item.value}>
+                  {item.label}
+                </option>
+              ))}
+            </select>
             <button
               type="submit"
               className="inline-flex h-8 items-center rounded-lg border border-foreground/10 px-2.5 text-[12px] transition hover:border-foreground/25"
             >
               搜索
             </button>
-            {(q || status !== "all") && (
+            {(q || status !== "all" || source !== "all") && (
               <Link
                 href="/admin/orders"
                 className="inline-flex h-8 items-center rounded-lg px-2 text-[12px] text-muted-foreground transition hover:text-foreground"
@@ -148,11 +170,12 @@ export default async function AdminOrdersPage({ searchParams }: PageProps<"/admi
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[900px] text-left text-xs">
+            <table className="w-full min-w-[1120px] text-left text-xs">
               <thead>
                 <tr className="text-[12px] uppercase tracking-wide text-muted-foreground">
                   <th className="px-4 py-2.5 font-medium sm:px-5">订单号</th>
                   <th className="px-3 py-2.5 font-medium">商品</th>
+                  <th className="px-3 py-2.5 font-medium">来源</th>
                   <th className="px-3 py-2.5 font-medium">金额</th>
                   <th className="px-3 py-2.5 font-medium">买家邮箱</th>
                   <th className="px-3 py-2.5 font-medium">状态</th>
@@ -178,13 +201,17 @@ export default async function AdminOrdersPage({ searchParams }: PageProps<"/admi
                       <div className="mt-0.5 max-w-[190px] truncate text-[12px] text-muted-foreground">
                         {o.variantName} × {o.quantity}
                       </div>
-                      {o.orderType !== "normal" && (
-                        <div className="mt-1 flex flex-wrap gap-1 text-[10px]">
-                          <span className={cn("rounded-full px-1.5 py-0.5", o.orderType === "self" ? "bg-foreground/[0.05] text-muted-foreground" : "bg-brand/10 text-brand")}>{o.orderType === "self" ? "自购" : "代理推广"}</span>
-                          {o.affiliateCode && <span className="rounded-full bg-foreground/[0.04] px-1.5 py-0.5 font-mono text-muted-foreground">{o.affiliateCode}</span>}
-                          {o.src && <span className="rounded-full bg-foreground/[0.04] px-1.5 py-0.5 text-muted-foreground">{o.src}</span>}
-                        </div>
-                      )}
+                    </td>
+                    <td className="px-3 py-3">
+                      <OrderSourceInfo
+                        orderType={o.orderType}
+                        affiliateId={o.affiliateId}
+                        affiliateName={o.agentName}
+                        affiliateCode={o.affiliateCode}
+                        priceCodeValue={o.priceCodeValue}
+                        src={o.src}
+                        className="max-w-[230px]"
+                      />
                     </td>
                     <td className="px-3 py-3 font-mono text-[13px] font-medium">¥{formatPrice(o.totalCents)}</td>
                     <td className="px-3 py-3">

@@ -158,6 +158,16 @@ export function ProductCard({
                     {t.product.from}
                   </span>
                 )}
+                {product.compareAtPriceCents > product.minPriceCents && (
+                  <span
+                    className={cn(
+                      "ml-1 font-mono text-muted-foreground line-through",
+                      compact ? "text-[11px] max-[359px]:text-xs sm:text-xs" : "text-xs",
+                    )}
+                  >
+                    ¥{formatPrice(product.compareAtPriceCents)}
+                  </span>
+                )}
               </div>
               <span
                 className={cn(

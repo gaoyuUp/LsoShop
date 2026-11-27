@@ -1,6 +1,6 @@
 import "server-only";
 import { cookies } from "next/headers";
-import { getAffiliateByCode, resolvePriceCode, getAffiliateById } from "@/lib/affiliate";
+import { resolveAgentEntry, getAffiliateById } from "@/lib/affiliate";
 import { getCurrentAffiliate } from "@/lib/auth/affiliate-server";
 import { getSupportContacts } from "@/lib/catalog";
 import type { SupportContacts } from "@/lib/support";
@@ -9,29 +9,7 @@ import type { SupportContacts } from "@/lib/support";
 export const AFF_COOKIE = "lso_aff";
 const AFF_COOKIE_TTL = 30 * 86_400;
 
-type AgentContext = {
-  /** 已校验有效的推广码；无效 / 已停用为 null（回退系统价） */
-  code: string | null;
-  /** 当前价位码值（无为主价格） */
-  priceCode: string | null;
-  /** 渠道来源 */
-  src: string;
-  affiliateId: number | null;
-  /** 已校验的价位码 id（仅 affiliateId 有效时） */
-  priceCodeId: number | null;
-};
-
-function parseCookie(value: string): AgentContext {
-  const [code, pc, ...srcParts] = value.split(":");
-  const src = srcParts.join(":");
-  return {
-    code: code?.toUpperCase() || null,
-    priceCode: pc?.toUpperCase() || null,
-    src: (src ?? "").slice(0, 40),
-    affiliateId: null,
-    priceCodeId: null,
-  };
-}
+type AgentContext = { affiliateId: number | null };
 
 export const AFFILIATE_COOKIE_OPTIONS = {
   httpOnly: true,
@@ -40,39 +18,31 @@ export const AFFILIATE_COOKIE_OPTIONS = {
   maxAge: AFF_COOKIE_TTL,
 };
 
-/** 读取并校验当前请求的代理归因（无效码不产生归属，避免悄悄算给错误代理） */
-export async function getAgentContext(): Promise<AgentContext> {
+/** 主站价格上下文：未登录访客只看公开最高价，登录代理看自己的客户价 */
+export async function getAgentPricingContext(): Promise<AgentContext> {
+  const affiliate = await getCurrentAffiliate();
+  return { affiliateId: affiliate?.id ?? null };
+}
+
+/** 只用于客服归属：优先读取并校验当前代理链接 Cookie，其次回退当前登录代理 */
+async function getSupportAffiliateId(): Promise<number | null> {
   const store = await cookies();
   const raw = store.get(AFF_COOKIE)?.value;
-  if (!raw) {
-    // 代理登录后即使没有带 /r 链接，也按自己的客户价和客服配置逛店/下单。
-    const affiliate = await getCurrentAffiliate();
-    return affiliate
-      ? { code: affiliate.code, priceCode: null, src: "", affiliateId: affiliate.id, priceCodeId: null }
-      : { code: null, priceCode: null, src: "", affiliateId: null, priceCodeId: null };
+  if (raw) {
+    const [code, priceCode] = raw.split(":");
+    if (code) {
+      const entry = await resolveAgentEntry(code, priceCode || undefined);
+      if (!("invalid" in entry)) return entry.affiliate.id;
+    }
   }
-  const ctx = parseCookie(raw);
-  if (!ctx.code) return ctx;
-  const affiliate = await getAffiliateByCode(ctx.code);
-  if (!affiliate || affiliate.status !== "active") {
-    const current = await getCurrentAffiliate();
-    return current
-      ? { code: current.code, priceCode: null, src: ctx.src, affiliateId: current.id, priceCodeId: null }
-      : { code: null, priceCode: null, src: ctx.src, affiliateId: null, priceCodeId: null };
-  }
-  ctx.affiliateId = affiliate.id;
-  if (ctx.priceCode) {
-    const pc = await resolvePriceCode(affiliate.id, ctx.priceCode);
-    if (pc) ctx.priceCodeId = pc.id;
-    else ctx.priceCode = null;
-  }
-  return ctx;
+  const current = await getCurrentAffiliate();
+  return current?.id ?? null;
 }
 
 /** 店铺页客服：代理链接显示代理客服，根路径显示平台客服 */
-async function resolveShopSupport(ctx: AgentContext): Promise<SupportContacts> {
-  if (ctx.affiliateId) {
-    const agent = await getAffiliateById(ctx.affiliateId);
+async function resolveShopSupport(affiliateId: number | null): Promise<SupportContacts> {
+  if (affiliateId) {
+    const agent = await getAffiliateById(affiliateId);
     if (agent) {
       const hasChannel = Boolean(agent.wechat || agent.wechatQr || agent.qq || agent.telegram);
       if (hasChannel) {
@@ -93,5 +63,5 @@ async function resolveShopSupport(ctx: AgentContext): Promise<SupportContacts> {
 
 /** 当前请求归因下的店铺客服（layout 用） */
 export async function resolveAgentSupport(): Promise<SupportContacts> {
-  return resolveShopSupport(await getAgentContext());
+  return resolveShopSupport(await getSupportAffiliateId());
 }

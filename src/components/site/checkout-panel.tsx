@@ -1,21 +1,31 @@
 "use client";
-import { Check, Loader2, Minus, Plus, Truck } from "lucide-react";
+import { Check, Loader2, Minus, Plus, Ticket, Truck, X } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useTransition } from "react";
 import { toast } from "sonner";
 import type { PublicProduct } from "@/lib/catalog";
 import { formatPrice } from "@/lib/format";
 import { saveLocalOrder } from "@/lib/local-orders";
 import { useT } from "@/i18n/provider";
+import { applyCouponAction } from "@/lib/actions/coupons";
 import { cn } from "@/lib/utils";
 import { AnimatedPrice } from "./animated-number";
 import { AlipayIcon } from "./alipay-icon";
 import { PurchaseNotice } from "./purchase-notice";
+import { SegmentedCodeInput } from "./segmented-code-input";
 
 const EMAIL_DOMAINS = ["qq.com", "163.com", "gmail.com", "outlook.com", "icloud.com", "126.com"];
 
-export function CheckoutPanel({ product }: { product: PublicProduct }) {
+export function CheckoutPanel({
+  product,
+  initialCouponCode,
+  initialCouponLabel,
+}: {
+  product: PublicProduct;
+  initialCouponCode?: string;
+  initialCouponLabel?: string;
+}) {
   const t = useT();
   const router = useRouter();
   const firstAvailable = product.variants.find((v) => v.stock === null || v.stock > 0) ?? product.variants[0];
@@ -23,13 +33,27 @@ export function CheckoutPanel({ product }: { product: PublicProduct }) {
   const variant = product.variants.find((v) => v.id === variantId) ?? firstAvailable;
   const [qty, setQty] = useState(variant?.minQuantity ?? 1);
   const [email, setEmail] = useState("");
+  const [buyerInput, setBuyerInput] = useState("");
   const [agree, setAgree] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [shakeAgree, setShakeAgree] = useState(0);
+  const [couponInput, setCouponInput] = useState(initialCouponCode ?? "");
+  const [appliedCoupon, setAppliedCoupon] = useState<{ code: string; label: string } | null>(
+    initialCouponCode ? { code: initialCouponCode, label: initialCouponLabel || "优惠码" } : null,
+  );
+  const [priceOverrides, setPriceOverrides] = useState<Record<number, number> | null>(
+    initialCouponCode ? Object.fromEntries(product.variants.map((v) => [v.id, v.priceCents])) : null,
+  );
+  const [couponError, setCouponError] = useState("");
+  const [couponPending, startCouponTransition] = useTransition();
 
+  const priceFor = (v: PublicProduct["variants"][number] | undefined) =>
+    v ? (priceOverrides?.[v.id] ?? v.priceCents) : 0;
   const maxQty = variant ? Math.min(variant.maxQuantity, variant.stock ?? variant.maxQuantity) : 1;
   const soldOut = !variant || variant.stock === 0;
-  const total = (variant?.priceCents ?? 0) * qty;
+  const selectedPrice = priceFor(variant);
+  const total = selectedPrice * qty;
+  const couponSavings = variant && appliedCoupon ? Math.max(0, variant.listPriceCents - selectedPrice) * qty : 0;
 
   const suggestions = useMemo(() => {
     const at = email.indexOf("@");
@@ -45,9 +69,50 @@ export function CheckoutPanel({ product }: { product: PublicProduct }) {
     setQty((q) => Math.min(Math.max(q, v.minQuantity), Math.max(v.minQuantity, Math.min(v.maxQuantity, v.stock ?? v.maxQuantity))));
   }
 
+  function applyCoupon() {
+    const code = couponInput.trim().toUpperCase();
+    if (!code) {
+      clearCoupon();
+      return;
+    }
+    startCouponTransition(async () => {
+      setCouponError("");
+      const result = await applyCouponAction({ code, slug: product.slug });
+      if ("error" in result) {
+        setCouponError(result.error);
+        return;
+      }
+      setCouponInput(result.code);
+      setAppliedCoupon({ code: result.code, label: result.label });
+      setPriceOverrides(Object.fromEntries(result.variants.map((v) => [v.id, v.priceCents])));
+    });
+  }
+
+  function clearCoupon() {
+    setCouponInput("");
+    setCouponError("");
+    setAppliedCoupon(null);
+    setPriceOverrides(Object.fromEntries(product.variants.map((v) => [v.id, v.listPriceCents])));
+  }
+
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     if (!variant || soldOut) return;
+    if (product.buyerInputLabel) {
+      const value = buyerInput.trim();
+      if (!value) {
+        toast.warning(
+          product.buyerInputLength > 0
+            ? `请填写 ${product.buyerInputLength} 位${product.buyerInputLabel}`
+            : `请填写${product.buyerInputLabel}`,
+        );
+        return;
+      }
+      if (product.buyerInputLength > 0 && value.length !== product.buyerInputLength) {
+        toast.warning(`请填写完整的 ${product.buyerInputLength} 位${product.buyerInputLabel}`);
+        return;
+      }
+    }
     if (!agree) {
       setShakeAgree((n) => n + 1);
       toast.warning(t.product.needAgree);
@@ -58,7 +123,13 @@ export function CheckoutPanel({ product }: { product: PublicProduct }) {
       const res = await fetch("/api/orders", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ variantId: variant.id, quantity: qty, email }),
+        body: JSON.stringify({
+          variantId: variant.id,
+          quantity: qty,
+          email,
+          buyerInput: buyerInput.trim(),
+          couponCode: appliedCoupon?.code ?? "",
+        }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || t.common.networkError);
@@ -86,6 +157,7 @@ export function CheckoutPanel({ product }: { product: PublicProduct }) {
           {product.variants.map((v) => {
             const active = v.id === variant?.id;
             const out = v.stock === 0;
+            const price = priceFor(v);
             return (
               <button
                 key={v.id}
@@ -124,9 +196,9 @@ export function CheckoutPanel({ product }: { product: PublicProduct }) {
                   </span>
                 </span>
                 <span className="text-right">
-                  <span className="font-mono text-lg font-semibold">¥{formatPrice(v.priceCents)}</span>
-                  {v.originalPriceCents > v.priceCents && (
-                    <span className="block font-mono text-xs text-muted-foreground line-through">¥{formatPrice(v.originalPriceCents)}</span>
+                  <span className="font-mono text-lg font-semibold">¥{formatPrice(price)}</span>
+                  {v.listPriceCents > price && (
+                    <span className="block font-mono text-xs text-muted-foreground line-through">¥{formatPrice(v.listPriceCents)}</span>
                   )}
                 </span>
               </button>
@@ -157,6 +229,93 @@ export function CheckoutPanel({ product }: { product: PublicProduct }) {
           </StepButton>
         </div>
       </section>
+
+      {/* 优惠码 */}
+      <section>
+        <div className="flex items-center justify-between">
+          <Label htmlFor="coupon-code">优惠码</Label>
+          <span className="text-xs text-muted-foreground">{appliedCoupon ? "已应用" : "选填"}</span>
+        </div>
+        <div
+          className={cn(
+            "mt-3 flex h-12 items-center gap-2 rounded-2xl border px-3.5 transition",
+            appliedCoupon
+              ? "border-emerald-500/25 bg-emerald-500/[0.04]"
+              : "border-foreground/10 bg-background/60 focus-within:border-transparent focus-within:shadow-[0_0_0_1.5px_var(--t1),0_0_0_6px_color-mix(in_oklch,var(--t1)_15%,transparent)] dark:bg-foreground/[0.03]",
+          )}
+        >
+          <Ticket className={cn("size-4 shrink-0", appliedCoupon ? "text-emerald-600 dark:text-emerald-400" : "text-muted-foreground/60")} />
+          <input
+            id="coupon-code"
+            value={couponInput}
+            onChange={(e) => setCouponInput(e.target.value.toUpperCase().replace(/\s+/g, "").slice(0, 16))}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                applyCoupon();
+              }
+            }}
+            placeholder="输入代理码 / 价位码"
+            autoComplete="off"
+            className="min-w-0 flex-1 bg-transparent font-mono text-[15px] uppercase tracking-wide outline-none placeholder:font-sans placeholder:normal-case placeholder:tracking-normal placeholder:text-muted-foreground/60"
+          />
+          {appliedCoupon ? (
+            <div className="flex shrink-0 items-center gap-2">
+              <span className="whitespace-nowrap text-[12px] font-medium text-emerald-600 dark:text-emerald-400">
+                {couponSavings > 0 ? `已省 ¥${formatPrice(couponSavings)}` : "已应用"}
+              </span>
+              <button
+                type="button"
+                onClick={clearCoupon}
+                className="grid size-6 place-items-center rounded-full text-muted-foreground transition hover:bg-foreground/[0.06] hover:text-foreground"
+                aria-label="取消优惠码"
+              >
+                <X className="size-3.5" />
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={applyCoupon}
+              disabled={couponPending || !couponInput.trim()}
+              className="inline-flex h-8 shrink-0 items-center rounded-xl bg-foreground px-3 text-xs font-medium text-background transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              {couponPending ? <Loader2 className="size-3.5 animate-spin" /> : "使用"}
+            </button>
+          )}
+        </div>
+        {appliedCoupon && <p className="mt-1.5 text-[11px] text-muted-foreground">{appliedCoupon.label}</p>}
+        {couponError && <p className="mt-1.5 text-[11px] text-rose-500">{couponError}</p>}
+      </section>
+
+      {/* 附加信息 */}
+      {product.buyerInputLabel && (
+        <section>
+          <Label htmlFor={product.buyerInputLength > 0 ? undefined : "buyer-input"}>{product.buyerInputLabel}</Label>
+          <div className="mt-3">
+            {product.buyerInputLength > 0 ? (
+              <SegmentedCodeInput
+                value={buyerInput}
+                onChange={setBuyerInput}
+                length={product.buyerInputLength}
+                ariaLabel={product.buyerInputLabel}
+              />
+            ) : (
+              <input
+                id="buyer-input"
+                type="text"
+                required
+                autoComplete="off"
+                value={buyerInput}
+                onChange={(e) => setBuyerInput(e.target.value)}
+                placeholder={product.buyerInputPlaceholder || `请输入${product.buyerInputLabel}`}
+                className="h-12 w-full rounded-2xl border border-foreground/10 bg-background/60 px-4 text-[15px] outline-none transition placeholder:text-muted-foreground/70 focus:border-transparent focus:shadow-[0_0_0_1.5px_var(--t1),0_0_0_6px_color-mix(in_oklch,var(--t1)_15%,transparent)] dark:bg-foreground/[0.03]"
+              />
+            )}
+          </div>
+          {product.buyerInputHint && <p className="mt-2 text-xs text-muted-foreground">{product.buyerInputHint}</p>}
+        </section>
+      )}
 
       {/* 邮箱 */}
       <section>
@@ -234,6 +393,11 @@ export function CheckoutPanel({ product }: { product: PublicProduct }) {
               <span className="text-sm">¥</span>
               <AnimatedPrice cents={total} className="font-mono text-[28px] font-semibold leading-none tabular-nums" />
             </div>
+            {couponSavings > 0 && (
+              <div className="mt-1 text-[11px] font-medium text-emerald-600 dark:text-emerald-400">
+                比原价省 ¥{formatPrice(couponSavings)}
+              </div>
+            )}
           </div>
           <button
             type="submit"

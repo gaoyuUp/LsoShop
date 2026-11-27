@@ -160,7 +160,7 @@ export default async function AgentPricingPage({ searchParams }: PageProps<"/pro
                   <span className="font-mono text-[10px] text-muted-foreground">{code.code}</span>
                   <span className="text-[10px] text-muted-foreground">{code.customProductCount > 0 ? `${code.customProductCount} 个商品独立价` : "沿用主价格"}</span>
                   <div className="ml-auto flex items-center gap-2">
-                    <CopyButton value={`${linkBase}?pc=${code.code}`} label="" />
+                    <CopyButton value={absoluteUrl(`/r/${code.code}`)} label="" />
                     <form action={togglePriceCodeAction}>
                       <input type="hidden" name="id" value={code.id} />
                       <input type="hidden" name="active" value={code.active ? "0" : "1"} />

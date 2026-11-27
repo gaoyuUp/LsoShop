@@ -111,9 +111,30 @@ async function main() {
       { productId: plus.id, name: "Plus 成品号 · 日区", description: "1 个账号 · 28 天质保", priceCents: 6600, minQuantity: 1, maxQuantity: 10, sort: 10 },
     ]);
 
+    const [token] = await db.insert(schema.products).values({
+      categoryId: museCategoryId,
+      slug: "muse-ai-token",
+      name: "Muse AI Token",
+      subtitle: "自动充值到你的 Muse 账号",
+      badge: "自动充值",
+      description: "Muse AI Token 自动充值，10 亿 token/份，5 份起购，每单最多 30 份。充值完成后发送通知邮件。",
+      image: "/products/muse.svg",
+      theme: "violet",
+      deliveryHint: "充值完成后发送通知邮件",
+      buyerInputLabel: "Muse 邀请码",
+      buyerInputPlaceholder: "请输入要充值的 Muse 邀请码",
+      buyerInputHint: "请确认邀请码填写正确，充值后将无法撤回",
+      buyerInputLength: 6,
+      sort: 15,
+    }).$returningId();
+    await db.insert(schema.productVariants).values([
+      { productId: token.id, name: "10 亿 Token/份", description: "10 亿 token/份", priceCents: 200, minQuantity: 5, maxQuantity: 30, deliveryMode: "manual", sort: 10 },
+    ]);
+
     // 演示库存：每个规格放几条测试卡密，方便直接走通流程（后台可删除）
     const variants = await db.select().from(schema.productVariants);
     for (const v of variants) {
+      if (v.deliveryMode === "manual") continue;
       await db.insert(schema.inventoryItems).values(
         Array.from({ length: 5 }, (_, i) => ({
           variantId: v.id,
@@ -121,7 +142,7 @@ async function main() {
         })),
       );
     }
-    console.log("✓ 已写入 2 个初始商品（含规格、须知、演示库存）");
+    console.log("✓ 已写入 3 个初始商品（含规格、须知、演示库存）");
   }
 
   const defaults: Record<string, string> = {

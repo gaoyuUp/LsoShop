@@ -6,14 +6,11 @@ import { cn } from "@/lib/utils";
 
 export function AgentProductGrid({
   products,
-  agentCode,
-  priceCode,
+  entryCode,
 }: {
   products: PublicProduct[];
-  /** 推广码：详情页链接 /r/:code/products/:slug */
-  agentCode: string;
-  /** 价位码（无主价格） */
-  priceCode?: string;
+  /** 规范入口码：代理推广码或价位码，店铺内链接始终保持当前优惠 */
+  entryCode: string;
 }) {
   const categories = useMemo(() => {
     const map = new Map<number, { id: number; name: string; count: number; sort: number }>();
@@ -27,8 +24,7 @@ export function AgentProductGrid({
 
   const [active, setActive] = useState<number | "all">("all");
   const visible = active === "all" ? products : products.filter((p) => p.categoryId === active);
-  const pcQuery = priceCode ? `?pc=${encodeURIComponent(priceCode)}` : "";
-  const detailHref = (slug: string) => `/r/${agentCode}/products/${slug}${pcQuery}`;
+  const detailHref = (slug: string) => `/r/${entryCode}/products/${slug}`;
 
   return (
     <>

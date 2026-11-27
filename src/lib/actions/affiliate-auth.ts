@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
 import { getAffiliateByEmail, redeemInvite, validateInvite, AffiliateError } from "@/lib/affiliate";
 import { EmailCodeError, sendVerificationCode, verifyVerificationCode } from "@/lib/affiliate-mail";
+import { recordAffiliateLogin } from "@/lib/affiliate-login";
 import { clearAffiliateLogin, setAffiliateLogin } from "@/lib/auth/affiliate-server";
 import { clientIp, rateLimit } from "@/lib/http";
 
@@ -61,6 +62,7 @@ export async function verifyAffiliateCodeAction(input: Input): Promise<JoinActio
 
     if (!affiliate || affiliate.status !== "active") return { error: "该代理账号已停用，请联系管理员" };
     await setAffiliateLogin({ id: affiliate.id, email: affiliate.email });
+    await recordAffiliateLogin({ id: affiliate.id, email: affiliate.email }, input.mode);
   } catch (e) {
     if (e instanceof EmailCodeError || e instanceof AffiliateError) return { error: e.message };
     console.error("[affiliate verify]", e);

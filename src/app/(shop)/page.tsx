@@ -6,7 +6,7 @@ import { HomeFeaturesEmbed } from "@/components/site/home-features-embed";
 import { ProductGrid } from "@/components/site/product-grid";
 import { getDictionary } from "@/i18n";
 import { getListedProducts, getSetting } from "@/lib/catalog";
-import { getAgentContext } from "@/lib/agent-context";
+import { getAgentPricingContext } from "@/lib/agent-context";
 import { absoluteUrl, serializeJsonLd } from "@/lib/seo";
 import { getSiteConfig } from "@/lib/site-config";
 import { cn } from "@/lib/utils";
@@ -46,8 +46,8 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function HomePage() {
   await connection();
-  const ctx = await getAgentContext();
-  const agent = ctx.affiliateId ? { affiliateId: ctx.affiliateId, priceCodeId: ctx.priceCodeId } : undefined;
+  const ctx = await getAgentPricingContext();
+  const agent = ctx.affiliateId ? { affiliateId: ctx.affiliateId, priceCodeId: null } : undefined;
   const [products, announcement, site] = await Promise.all([getListedProducts(agent), getSetting("announcement"), getSiteConfig()]);
   const itemListJsonLd =
     products.length > 0

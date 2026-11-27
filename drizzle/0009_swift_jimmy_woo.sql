@@ -1,0 +1,2 @@
+ALTER TABLE `products` ADD `buyer_input_length` int DEFAULT 0 NOT NULL;--> statement-breakpoint
+UPDATE `products` SET `buyer_input_length` = 6 WHERE `slug` = 'muse-ai-token' AND `buyer_input_length` = 0;
