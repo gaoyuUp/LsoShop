@@ -3,11 +3,16 @@ import { SiteFooter } from "@/components/site/site-footer";
 import { SiteHeader } from "@/components/site/site-header";
 import { absoluteUrl, serializeJsonLd, siteUrl } from "@/lib/seo";
 import { getCurrentAffiliate } from "@/lib/auth/affiliate-server";
-import { resolveAgentSupport } from "@/lib/agent-context";
+import { getAgentAttribution, resolveAgentSupport } from "@/lib/agent-context";
 import { getSiteConfig } from "@/lib/site-config";
 
 export default async function ShopLayout({ children }: LayoutProps<"/">) {
-  const [support, affiliate, site] = await Promise.all([resolveAgentSupport(), getCurrentAffiliate(), getSiteConfig()]);
+  const [attribution, affiliate, site] = await Promise.all([
+    getAgentAttribution(),
+    getCurrentAffiliate(),
+    getSiteConfig(),
+  ]);
+  const support = await resolveAgentSupport(attribution);
   const organizationJsonLd = serializeJsonLd({
     "@context": "https://schema.org",
     "@graph": [
@@ -40,6 +45,7 @@ export default async function ShopLayout({ children }: LayoutProps<"/">) {
         agent={affiliate ? { code: affiliate.code, email: affiliate.email, nickname: affiliate.nickname } : null}
         siteName={site.name}
         logoUrl={site.logoUrl}
+        homeHref={attribution ? `/r/${attribution.entryCode}` : "/"}
       />
       <main className="flex-1">{children}</main>
       <SiteFooter siteName={site.name} logoUrl={site.logoUrl} />
