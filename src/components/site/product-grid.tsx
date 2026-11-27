@@ -2,7 +2,7 @@
 import { useMemo, useState } from "react";
 import type { PublicProduct } from "@/lib/catalog";
 import { cn } from "@/lib/utils";
-import { ProductCard } from "./product-card";
+import { FolderProductCard } from "./folder-product-card";
 
 export function ProductGrid({ products }: { products: PublicProduct[] }) {
   const categories = useMemo(() => {
@@ -21,16 +21,16 @@ export function ProductGrid({ products }: { products: PublicProduct[] }) {
   return (
     <>
       {categories.length > 1 && (
-        <div className="thin-scroll mb-5 flex items-center gap-1.5 overflow-x-auto px-2 pb-1">
+        <div className="thin-scroll mb-4 flex items-center gap-1.5 overflow-x-auto px-2 pb-1 sm:mb-2">
           <FilterPill active={active === "all"} onClick={() => setActive("all")} label="全部" count={products.length} />
           {categories.map((c) => (
             <FilterPill key={c.id} active={active === c.id} onClick={() => setActive(c.id)} label={c.name} count={c.count} />
           ))}
         </div>
       )}
-      <div className="grid grid-cols-2 gap-2.5 max-[359px]:grid-cols-1 max-[359px]:gap-5 sm:gap-5 lg:grid-cols-3">
+      <div className="grid grid-cols-2 gap-x-3 gap-y-1 max-[359px]:grid-cols-1 sm:gap-x-5 sm:gap-y-1.5 lg:grid-cols-3">
         {visible.map((p, i) => (
-          <ProductCard key={p.id} product={p} index={i} surface="plain" compact />
+          <FolderProductCard key={p.id} product={p} index={i} href={`/products/${p.slug}`} />
         ))}
       </div>
       {visible.length === 0 && (

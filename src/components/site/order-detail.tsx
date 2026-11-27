@@ -30,6 +30,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { useT } from "@/i18n/provider";
+import { useAgentOrderRef } from "./use-agent-order-ref";
 import { copyText } from "@/lib/clipboard";
 import { formatPrice } from "@/lib/format";
 import { findLocalToken, saveLocalOrder } from "@/lib/local-orders";
@@ -88,6 +89,7 @@ async function fetchLookup(orderNo: string, credential: string): Promise<OrderVi
 
 export function OrderDetail({ orderNo, support }: { orderNo: string; support: SupportContacts }) {
   const t = useT();
+  const { ordersHref, productsHref } = useAgentOrderRef();
   const [order, setOrder] = useState<OrderView | null>(null);
   const [credential, setCredential] = useState("");
   const [needsCredential, setNeedsCredential] = useState(false);
@@ -297,11 +299,11 @@ export function OrderDetail({ orderNo, support }: { orderNo: string; support: Su
             </button>
           </form>
           <div className="mt-6 flex items-center justify-between border-t border-foreground/[0.07] pt-4 text-xs text-muted-foreground">
-            <Link href="/orders" className="inline-flex items-center gap-1 hover:text-foreground">
+            <Link href={ordersHref} className="inline-flex items-center gap-1 hover:text-foreground">
               <ArrowLeft className="size-3.5" />
               {t.order.myOrders}
             </Link>
-            <Link href="/#products" className="hover:text-foreground">
+            <Link href={productsHref} className="hover:text-foreground">
               {t.order.continueShop}
             </Link>
           </div>
@@ -320,7 +322,7 @@ export function OrderDetail({ orderNo, support }: { orderNo: string; support: Su
   return (
     <div className="mx-auto max-w-5xl px-4 pb-10 pt-8 sm:px-6 sm:pt-12">
       <Link
-        href="/orders"
+        href={ordersHref}
         className="inline-flex items-center gap-1.5 rounded-full px-2 py-1 text-sm text-muted-foreground transition hover:text-foreground"
       >
         <ArrowLeft className="size-4" />
@@ -532,7 +534,7 @@ export function OrderDetail({ orderNo, support }: { orderNo: string; support: Su
               <h2 className="mt-4 text-lg font-semibold">{s.title}</h2>
               <p className="mx-auto mt-2 max-w-sm text-sm leading-relaxed text-muted-foreground">{s.desc}</p>
               <Link
-                href="/#products"
+                href={productsHref}
                 className="mt-6 inline-flex h-10 items-center gap-1.5 rounded-full bg-foreground px-5 text-xs font-medium text-background"
               >
                 <ShoppingBag className="size-3.5" />

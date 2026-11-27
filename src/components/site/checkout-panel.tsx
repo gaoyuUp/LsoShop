@@ -9,6 +9,7 @@ import { formatPrice } from "@/lib/format";
 import { saveLocalOrder } from "@/lib/local-orders";
 import { useT } from "@/i18n/provider";
 import { applyCouponAction } from "@/lib/actions/coupons";
+import { agentRefQuery } from "@/lib/agent-ref";
 import { cn } from "@/lib/utils";
 import { AnimatedPrice } from "./animated-number";
 import { AlipayIcon } from "./alipay-icon";
@@ -21,10 +22,12 @@ export function CheckoutPanel({
   product,
   initialCouponCode,
   initialCouponLabel,
+  orderRef,
 }: {
   product: PublicProduct;
   initialCouponCode?: string;
   initialCouponLabel?: string;
+  orderRef?: string;
 }) {
   const t = useT();
   const router = useRouter();
@@ -141,7 +144,7 @@ export function CheckoutPanel({
         totalCents: total,
         createdAt: new Date().toISOString(),
       });
-      router.push(`/order/${data.orderNo}`);
+      router.push(`/order/${data.orderNo}${agentRefQuery(orderRef ?? "")}`);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : t.common.networkError);
       setSubmitting(false);

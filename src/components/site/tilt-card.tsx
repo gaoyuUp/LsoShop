@@ -16,12 +16,10 @@ export function TiltCard({
   children,
   className,
   theme,
-  surface = "glass",
 }: {
   children: React.ReactNode;
   className?: string;
   theme?: string;
-  surface?: "glass" | "plain";
 }) {
   const reduce = useReducedMotion();
   const px = useMotionValue(0.5);
@@ -55,11 +53,7 @@ export function TiltCard({
         onPointerEnter={() => lift.set(1)}
         onPointerLeave={onLeave}
         style={{ rotateX: rx, rotateY: ry, transformStyle: "preserve-3d", z: useTransform(lift, [0, 1], [0, 24]) }}
-        className={cn(
-          "beam group/tilt relative h-full rounded-[28px]",
-          surface === "plain" ? "card-plain" : "glass",
-          className,
-        )}
+        className={cn("beam group/tilt glass relative h-full rounded-[28px]", className)}
       >
         {children}
         <motion.div

@@ -1,7 +1,8 @@
 "use client";
 import { useMotionValueEvent, useScroll } from "motion/react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
+import { agentOrdersHref, agentProductsHref, normalizeAgentRef } from "@/lib/agent-ref";
 import { useState } from "react";
 import { Sparkles } from "lucide-react";
 import { AgentAccountMenu } from "./agent-account-menu";
@@ -29,17 +30,26 @@ export function SiteHeader({
 }) {
   const t = useT();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const { scrollY } = useScroll();
   const [scrolled, setScrolled] = useState(false);
   useMotionValueEvent(scrollY, "change", (v) => setScrolled(v > 12));
 
+  const inOrderArea = pathname === "/orders" || pathname.startsWith("/order/");
+  const refCode = inOrderArea ? normalizeAgentRef(searchParams.get("ref")) : "";
+  const entryCode = homeHref.startsWith("/r/") ? homeHref.slice(3) : "";
+  const effectiveHomeHref = refCode ? `/r/${refCode}` : homeHref;
+  const ordersRef = refCode || entryCode;
+  const ordersHref = agentOrdersHref(ordersRef);
+  const productsHref = agentProductsHref(ordersRef);
+
   const links = [
     {
-      href: homeHref,
+      href: productsHref,
       label: t.nav.products,
       active: pathname === "/" || pathname.startsWith("/products/") || pathname.startsWith("/r/"),
     },
-    { href: "/orders", label: t.nav.orders, active: pathname.startsWith("/orders") || pathname.startsWith("/order/") },
+    { href: ordersHref, label: t.nav.orders, active: pathname.startsWith("/orders") || pathname.startsWith("/order/") },
   ];
 
   return (
@@ -51,7 +61,7 @@ export function SiteHeader({
           scrolled ? "glass-strong" : "border border-transparent",
         )}
       >
-        <Link href={homeHref} className="rounded-xl outline-offset-4">
+        <Link href={effectiveHomeHref} className="rounded-xl outline-offset-4">
           <Wordmark name={siteName} logoUrl={logoUrl} />
         </Link>
 
@@ -92,7 +102,7 @@ export function SiteHeader({
       </div>
 
     </header>
-    <MobileBottomNav showPromote={Boolean(agent)} homeHref={homeHref} />
+    <MobileBottomNav showPromote={Boolean(agent)} productsHref={productsHref} ordersHref={ordersHref} />
     </>
   );
 }

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Hero } from "@/components/site/hero";
 import { AgentProductGrid } from "@/components/site/agent-product-grid";
 import { getDictionary } from "@/i18n";
+import { agentOrdersHref } from "@/lib/agent-ref";
 import { getAgentShop } from "@/lib/affiliate";
 import { getSiteConfig } from "@/lib/site-config";
 
@@ -56,7 +57,7 @@ export default async function AgentShopPage({ params, searchParams }: PageProps<
 
   return (
     <>
-      <Hero announcement={""} logoUrl={site.logoUrl} />
+      <Hero announcement={""} logoUrl={site.logoUrl} ordersHref={agentOrdersHref(shop.entryCode)} />
       <div id="products" className="mx-auto max-w-6xl scroll-mt-24 px-4 sm:px-6">
         <div className="mb-4 flex items-center gap-2 rounded-2xl border border-brand/15 bg-brand/[0.05] px-4 py-2.5 text-xs text-brand">
           <span className="size-1.5 rounded-full bg-brand" />

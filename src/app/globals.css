@@ -253,27 +253,6 @@
     var(--shadow-card);
 }
 
-/* 首页商品卡：透明底，悬停出现描边框；触屏设备默认显示描边框 */
-.card-plain {
-  --card-plain-frame: color-mix(in oklch, var(--foreground) 10%, transparent);
-  background: transparent;
-  box-shadow: 0 0 0 1px transparent;
-  transition: box-shadow 0.3s ease;
-}
-.dark .card-plain {
-  --card-plain-frame: rgb(255 255 255 / 0.15);
-}
-@media (hover: hover) {
-  .card-plain:hover {
-    box-shadow: 0 0 0 1px var(--card-plain-frame);
-  }
-}
-@media (hover: none) {
-  .card-plain {
-    box-shadow: 0 0 0 1px var(--card-plain-frame);
-  }
-}
-
 /* 流光边框：hover 时沿边框旋转的光带 */
 @property --beam-angle {
   syntax: "<angle>";

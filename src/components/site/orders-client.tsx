@@ -30,6 +30,7 @@ import { ORDER_STATUS } from "@/lib/format";
 import { formatPrice } from "@/lib/format";
 import { findLocalToken, getLocalOrders, removeLocalOrder, saveLocalOrder, type LocalOrder } from "@/lib/local-orders";
 import { useT } from "@/i18n/provider";
+import { useAgentOrderRef } from "./use-agent-order-ref";
 import { cn } from "@/lib/utils";
 
 type LiveOrder = { orderNo: string; status: string; deliveredAt: string | null };
@@ -54,6 +55,8 @@ const STATUS_STYLE: Record<string, string> = {
 export function OrdersClient({ title, desc }: { title: string; desc: string }) {
   const t = useT();
   const router = useRouter();
+  const { refQuery, productsHref } = useAgentOrderRef();
+  const orderHref = (orderNo: string) => `/order/${orderNo}${refQuery}`;
   const [local, setLocal] = useState<LocalOrder[]>([]);
   const [live, setLive] = useState<Record<string, LiveOrder>>({});
   const [mounted, setMounted] = useState(false);
@@ -122,7 +125,7 @@ export function OrdersClient({ title, desc }: { title: string; desc: string }) {
       } else {
         sessionStorage.setItem(`lso:cred:${no}`, cred);
       }
-      router.push(`/order/${no}`);
+      router.push(orderHref(no));
     } catch (err) {
       setError(err instanceof Error ? err.message : t.order.notFound);
       setSearching(false);
@@ -146,7 +149,7 @@ export function OrdersClient({ title, desc }: { title: string; desc: string }) {
           <p className="mt-2 max-w-xl text-sm leading-relaxed text-muted-foreground">{desc}</p>
         </div>
         <Link
-          href="/#products"
+          href={productsHref}
           className="inline-flex h-10 w-fit items-center gap-2 rounded-full border border-foreground/10 px-4 text-sm text-muted-foreground transition hover:border-foreground/25 hover:text-foreground"
         >
           <Sparkles className="size-4" />
@@ -185,7 +188,7 @@ export function OrdersClient({ title, desc }: { title: string; desc: string }) {
               </div>
               <p className="mt-4 text-sm font-medium">{t.orders.empty}</p>
               <Link
-                href="/#products"
+                href={productsHref}
                 className="mt-4 inline-flex h-9 items-center gap-1.5 rounded-full bg-foreground px-4 text-xs font-medium text-background transition hover:scale-[1.03]"
               >
                 {t.orders.emptyAction}
@@ -199,7 +202,7 @@ export function OrdersClient({ title, desc }: { title: string; desc: string }) {
                 const meta = ORDER_STATUS[status] ?? { label: status, tone: "zinc" as const };
                 return (
                   <li key={o.orderNo} className="group relative p-4 transition-colors hover:bg-foreground/[0.025] sm:p-5">
-                    <Link href={`/order/${o.orderNo}`} className="block">
+                    <Link href={orderHref(o.orderNo)} className="block">
                       <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0">
                           <div className="flex flex-wrap items-center gap-2">
@@ -276,7 +279,7 @@ export function OrdersClient({ title, desc }: { title: string; desc: string }) {
                           </AlertDialogContent>
                         </AlertDialog>
                         <Link
-                          href={`/order/${o.orderNo}`}
+                          href={orderHref(o.orderNo)}
                           className="inline-flex h-8 items-center gap-1 rounded-full bg-foreground/[0.06] px-3 text-xs font-medium transition hover:bg-foreground/[0.1]"
                         >
                           {status === "pending" ? t.order.waitingPay : "查看"}

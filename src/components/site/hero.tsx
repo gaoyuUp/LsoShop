@@ -13,11 +13,13 @@ export function Hero({
   announcement,
   compact = false,
   logoUrl,
+  ordersHref = "/orders",
   children,
 }: {
   announcement: string;
   compact?: boolean;
   logoUrl?: string;
+  ordersHref?: string;
   children?: ReactNode;
 }) {
   const t = useT();
@@ -72,7 +74,7 @@ export function Hero({
           <ArrowDown className="size-4 transition-transform group-hover:translate-y-0.5" />
         </a>
         <Link
-          href="/orders"
+          href={ordersHref}
           className="glass inline-flex h-9 items-center gap-1.5 rounded-full px-4 text-[11px] font-medium transition hover:scale-[1.03] active:scale-[0.98] sm:h-12 sm:gap-2 sm:px-6 sm:text-sm"
         >
           <Search className="size-4" />

@@ -1,4 +1,4 @@
-import { ChevronRight } from "lucide-react";
+import { ArrowLeft, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import type { PublicProduct } from "@/lib/catalog";
 import { getDictionary } from "@/i18n";
@@ -14,20 +14,23 @@ export function ProductDetailView({
   priceBadge,
   couponCode,
   couponLabel,
+  orderRef,
 }: {
   product: PublicProduct;
   homeHref?: string;
   priceBadge?: string;
   couponCode?: string;
   couponLabel?: string;
+  orderRef?: string;
 }) {
   const t = getDictionary();
 
   return (
     <div data-theme={product.theme} className="mx-auto max-w-6xl px-4 pb-8 pt-4 sm:px-6 sm:pb-10 sm:pt-6">
       <nav aria-label="面包屑" className="flex flex-wrap items-center gap-1.5 px-2 py-1 text-sm text-muted-foreground">
-        <Link href={homeHref} className="transition hover:text-foreground">
-          首页
+        <Link href={`${homeHref}#products`} className="inline-flex items-center gap-1 transition hover:text-foreground">
+          <ArrowLeft className="size-3.5" aria-hidden />
+          商品列表
         </Link>
         <ChevronRight className="size-3.5" aria-hidden />
         {product.categoryName !== product.name && (
@@ -85,7 +88,7 @@ export function ProductDetailView({
           {product.variants.length === 0 ? (
             <p className="py-10 text-center text-sm text-muted-foreground">{t.product.soldOut}</p>
           ) : (
-            <CheckoutPanel product={product} initialCouponCode={couponCode} initialCouponLabel={couponLabel} />
+            <CheckoutPanel product={product} initialCouponCode={couponCode} initialCouponLabel={couponLabel} orderRef={orderRef} />
           )}
         </div>
       </div>

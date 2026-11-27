@@ -10,7 +10,15 @@ const NAV = [
   { href: "/promote", label: "推广中心", icon: Megaphone, match: (p: string) => p.startsWith("/promote") },
 ];
 
-export function MobileBottomNav({ showPromote = false, homeHref = "/" }: { showPromote?: boolean; homeHref?: string }) {
+export function MobileBottomNav({
+  showPromote = false,
+  productsHref = "/#products",
+  ordersHref = "/orders",
+}: {
+  showPromote?: boolean;
+  productsHref?: string;
+  ordersHref?: string;
+}) {
   const pathname = usePathname();
   const items = showPromote ? NAV : NAV.slice(0, 2);
 
@@ -20,7 +28,7 @@ export function MobileBottomNav({ showPromote = false, homeHref = "/" }: { showP
         {items.map((item) => {
           const active = item.match(pathname);
           const Icon = item.icon;
-          const href = item.href === "/" ? homeHref : item.href;
+          const href = item.href === "/" ? productsHref : item.href === "/orders" ? ordersHref : item.href;
           return (
             <Link
               key={item.href}

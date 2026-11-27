@@ -10,7 +10,6 @@ export const AFF_COOKIE = "lso_aff";
 const AFF_COOKIE_TTL = 30 * 86_400;
 
 type AgentContext = { affiliateId: number | null };
-export type AgentAttribution = { affiliateId: number; entryCode: string };
 
 export const AFFILIATE_COOKIE_OPTIONS = {
   httpOnly: true,
@@ -25,22 +24,17 @@ export async function getAgentPricingContext(): Promise<AgentContext> {
   return { affiliateId: affiliate?.id ?? null };
 }
 
-/** 当前请求有效的代理入口，用于主站导航保持推广码 */
-export async function getAgentAttribution(): Promise<AgentAttribution | null> {
-  const store = await cookies();
-  const raw = store.get(AFF_COOKIE)?.value;
-  if (!raw) return null;
-  const [code, priceCode] = raw.split(":");
-  if (!code) return null;
-  const entry = await resolveAgentEntry(code, priceCode || undefined);
-  if ("invalid" in entry) return null;
-  return { affiliateId: entry.affiliate.id, entryCode: entry.entryCode };
-}
-
 /** 只用于客服归属：优先读取并校验当前代理链接 Cookie，其次回退当前登录代理 */
 async function getSupportAffiliateId(): Promise<number | null> {
-  const attribution = await getAgentAttribution();
-  if (attribution) return attribution.affiliateId;
+  const store = await cookies();
+  const raw = store.get(AFF_COOKIE)?.value;
+  if (raw) {
+    const [code, priceCode] = raw.split(":");
+    if (code) {
+      const entry = await resolveAgentEntry(code, priceCode || undefined);
+      if (!("invalid" in entry)) return entry.affiliate.id;
+    }
+  }
   const current = await getCurrentAffiliate();
   return current?.id ?? null;
 }
@@ -68,7 +62,6 @@ async function resolveShopSupport(affiliateId: number | null): Promise<SupportCo
 }
 
 /** 当前请求归因下的店铺客服（layout 用） */
-export async function resolveAgentSupport(attribution?: AgentAttribution | null): Promise<SupportContacts> {
-  if (attribution) return resolveShopSupport(attribution.affiliateId);
+export async function resolveAgentSupport(): Promise<SupportContacts> {
   return resolveShopSupport(await getSupportAffiliateId());
 }
