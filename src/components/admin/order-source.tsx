@@ -43,7 +43,7 @@ export function OrderSourceInfo({
       </span>
       {showAgent && isAgent && affiliateId && (
         <Link
-          href={`/admin/agents/${affiliateId}/orders`}
+          href={`/admin/agents/${affiliateId}/orders?from=orders`}
           className="max-w-[170px] truncate rounded-full bg-foreground/[0.04] px-1.5 py-0.5 text-foreground transition hover:bg-foreground/[0.08] hover:underline"
         >
           {affiliateName || affiliateCode || `代理 #${affiliateId}`}

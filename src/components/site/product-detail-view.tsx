@@ -24,7 +24,7 @@ export function ProductDetailView({
   const t = getDictionary();
 
   return (
-    <div data-theme={product.theme} className="mx-auto max-w-6xl px-4 pb-10 pt-6 sm:px-6">
+    <div data-theme={product.theme} className="mx-auto max-w-6xl px-4 pb-8 pt-4 sm:px-6 sm:pb-10 sm:pt-6">
       <nav aria-label="面包屑" className="flex flex-wrap items-center gap-1.5 px-2 py-1 text-sm text-muted-foreground">
         <Link href={homeHref} className="transition hover:text-foreground">
           首页
@@ -41,8 +41,8 @@ export function ProductDetailView({
         </span>
       </nav>
 
-      <div className="mt-4 grid gap-4 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:items-start lg:gap-8">
-        <div className="space-y-4">
+      <div className="mt-3 grid gap-4 lg:grid-cols-[minmax(0,440px)_minmax(0,1fr)] lg:items-start lg:gap-5">
+        <div className="space-y-3">
           <div className="glass-card rounded-[30px] p-2.5">
             <div className="relative overflow-hidden rounded-[22px] bg-foreground/[0.025]">
               <ProductArt
@@ -50,7 +50,7 @@ export function ProductDetailView({
                 name={product.name}
                 theme={product.theme}
                 size="lg"
-                className="aspect-[4/3] w-full"
+                className="aspect-[16/10] w-full"
               />
               {product.badge && (
                 <span className="absolute left-4 top-4 rounded-full border border-foreground/[0.06] bg-background/55 px-3 py-1 text-xs font-medium backdrop-blur-md">
@@ -65,8 +65,8 @@ export function ProductDetailView({
           </div>
         </div>
 
-        <div className="glass rounded-[30px] p-5 sm:p-7 lg:p-8">
-          <div className="mb-3 flex flex-wrap items-center gap-2">
+        <div className="glass rounded-[30px] p-4 sm:p-5 lg:p-6">
+          <div className="mb-2.5 flex flex-wrap items-center gap-2">
             <span className="rounded-full border border-brand/15 bg-brand/[0.07] px-2.5 py-1 text-[11px] font-medium text-brand">
               {product.categoryName}
             </span>
@@ -76,12 +76,12 @@ export function ProductDetailView({
               </span>
             )}
           </div>
-          <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">{product.name}</h1>
-          {product.subtitle && <p className="mt-2 text-muted-foreground">{product.subtitle}</p>}
+          <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">{product.name}</h1>
+          {product.subtitle && <p className="mt-1.5 text-sm text-muted-foreground sm:text-base">{product.subtitle}</p>}
           {product.description && (
-            <RichText text={product.description} className="mt-4 text-sm leading-relaxed text-muted-foreground" />
+            <RichText text={product.description} className="mt-2.5 text-sm leading-relaxed text-muted-foreground" />
           )}
-          <div className="my-7 h-px bg-gradient-to-r from-transparent via-foreground/10 to-transparent" />
+          <div className="my-4 h-px bg-gradient-to-r from-transparent via-foreground/10 to-transparent" />
           {product.variants.length === 0 ? (
             <p className="py-10 text-center text-sm text-muted-foreground">{t.product.soldOut}</p>
           ) : (

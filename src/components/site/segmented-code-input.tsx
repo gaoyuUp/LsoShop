@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef } from "react";
+import { cn } from "@/lib/utils";
 
 export function SegmentedCodeInput({
   value,
@@ -58,7 +59,7 @@ export function SegmentedCodeInput({
   }
 
   return (
-    <div className="flex max-w-sm gap-2" role="group" aria-label={ariaLabel}>
+    <div className="grid w-full max-w-[300px] grid-cols-6 gap-2" role="group" aria-label={ariaLabel}>
       {Array.from({ length }, (_, index) => (
         <input
           key={index}
@@ -86,7 +87,13 @@ export function SegmentedCodeInput({
           inputMode="text"
           maxLength={1}
           autoComplete={index === 0 ? "one-time-code" : "off"}
-          className="h-12 min-w-0 flex-1 rounded-xl border border-foreground/10 bg-background/60 text-center font-mono text-lg outline-none transition placeholder:text-muted-foreground/50 focus:border-transparent focus:shadow-[0_0_0_1.5px_var(--t1),0_0_0_6px_color-mix(in_oklch,var(--t1)_15%,transparent)] dark:bg-foreground/[0.03]"
+          className={cn(
+            "aspect-square min-w-0 rounded-lg border bg-foreground/[0.035] text-center font-mono text-lg font-semibold caret-[var(--t1)] shadow-[inset_0_1px_0_rgba(255,255,255,0.7)] outline-none transition-[border-color,background-color,box-shadow,transform] duration-200 selection:bg-brand/20 focus:scale-[1.04] sm:text-xl dark:bg-foreground/[0.06] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]",
+            chars[index]
+              ? "border-brand/30 bg-brand/[0.055]"
+              : "border-foreground/12 hover:border-foreground/22",
+            "focus:border-transparent focus:shadow-[0_0_0_1.5px_var(--t1),0_0_0_5px_color-mix(in_oklch,var(--t1)_12%,transparent)]",
+          )}
         />
       ))}
     </div>

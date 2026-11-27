@@ -2,7 +2,7 @@
 /* eslint-disable react-hooks/set-state-in-effect -- 挂载后从本地存储恢复查询口令、启动倒计时属于合理的外部状态同步 */
 import { AnimatePresence, motion } from "motion/react";
 import Link from "next/link";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import {
   ArrowLeft,
   ArrowRight,
@@ -97,7 +97,10 @@ export function OrderDetail({ orderNo, support }: { orderNo: string; support: Su
   const [qr, setQr] = useState("");
   const [copied, setCopied] = useState<string | null>(null);
   const [paying, setPaying] = useState(false);
+  const [supportFullWidth, setSupportFullWidth] = useState(false);
   const expiredRef = useRef(false);
+  const leftColRef = useRef<HTMLDivElement>(null);
+  const rightColRef = useRef<HTMLElement>(null);
 
   const load = useCallback(
     async (cred: string, silent = false) => {
@@ -226,6 +229,25 @@ export function OrderDetail({ orderNo, support }: { orderNo: string; support: Su
       setLoading(false);
     }
   }
+
+  useLayoutEffect(() => {
+    const left = leftColRef.current;
+    const right = rightColRef.current;
+    if (!left || !right) return;
+    const measure = () => {
+      const isDesktop = window.matchMedia("(min-width: 1024px)").matches;
+      setSupportFullWidth(!isDesktop || left.getBoundingClientRect().height > right.getBoundingClientRect().height + 1);
+    };
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(left);
+    observer.observe(right);
+    window.addEventListener("resize", measure);
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("resize", measure);
+    };
+  }, [order]);
 
   if (loading) return <OrderSkeleton />;
 
@@ -382,7 +404,8 @@ export function OrderDetail({ orderNo, support }: { orderNo: string; support: Su
       )}
 
       <div className="mt-5 grid gap-5 lg:grid-cols-[1.35fr_0.85fr]">
-        <div className="space-y-5">
+        <div>
+          <div ref={leftColRef} className="space-y-5">
           {status === "pending" && (
             <PaymentCard
               order={order}
@@ -517,11 +540,13 @@ export function OrderDetail({ orderNo, support }: { orderNo: string; support: Su
               </Link>
             </div>
           )}
+          </div>
 
+          {!supportFullWidth && <SupportSection support={support} />}
         </div>
 
         {/* 订单摘要 */}
-        <aside className="space-y-5 lg:sticky lg:top-24 lg:self-start">
+        <aside ref={rightColRef} className="space-y-5 lg:sticky lg:top-24 lg:self-start">
           <section className="glass overflow-hidden rounded-[26px]">
             <div className="p-2.5">
               <ProductArt
@@ -569,7 +594,7 @@ export function OrderDetail({ orderNo, support }: { orderNo: string; support: Su
         </aside>
       </div>
 
-      <SupportSection support={support} />
+      {supportFullWidth && <SupportSection support={support} />}
     </div>
   );
 }

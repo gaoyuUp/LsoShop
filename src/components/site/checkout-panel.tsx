@@ -149,11 +149,11 @@ export function CheckoutPanel({
   }
 
   return (
-    <form onSubmit={submit} className="space-y-7">
+    <form onSubmit={submit} className="space-y-4">
       {/* 规格 */}
       <section>
         <Label>{t.product.chooseVariant}</Label>
-        <div className="mt-3 grid gap-2.5">
+        <div className="mt-2.5 grid gap-2.5">
           {product.variants.map((v) => {
             const active = v.id === variant?.id;
             const out = v.stock === 0;
@@ -165,7 +165,7 @@ export function CheckoutPanel({
                 disabled={out}
                 onClick={() => pickVariant(v.id)}
                 className={cn(
-                  "relative flex items-center gap-3.5 rounded-2xl border px-4 py-3.5 text-left transition-all duration-300",
+                  "relative flex items-center gap-3.5 rounded-2xl border px-3.5 py-3 text-left transition-all duration-300",
                   active
                     ? "border-transparent bg-background/80 shadow-[0_0_0_1.5px_var(--t1),0_10px_30px_-12px_var(--t1)] dark:bg-foreground/[0.06]"
                     : "border-foreground/[0.08] bg-foreground/[0.015] hover:border-foreground/20",
@@ -230,6 +230,79 @@ export function CheckoutPanel({
         </div>
       </section>
 
+      {/* 附加信息 */}
+      {product.buyerInputLabel && (
+        <section>
+          <Label htmlFor={product.buyerInputLength > 0 ? undefined : "buyer-input"}>{product.buyerInputLabel}</Label>
+          <div className="mt-2.5">
+            {product.buyerInputLength > 0 ? (
+              <SegmentedCodeInput
+                value={buyerInput}
+                onChange={setBuyerInput}
+                length={product.buyerInputLength}
+                ariaLabel={product.buyerInputLabel}
+              />
+            ) : (
+              <input
+                id="buyer-input"
+                type="text"
+                required
+                autoComplete="off"
+                value={buyerInput}
+                onChange={(e) => setBuyerInput(e.target.value)}
+                placeholder={product.buyerInputPlaceholder || `请输入${product.buyerInputLabel}`}
+                className="h-11 w-full rounded-2xl border border-foreground/10 bg-background/60 px-4 text-[15px] outline-none transition placeholder:text-muted-foreground/70 focus:border-transparent focus:shadow-[0_0_0_1.5px_var(--t1),0_0_0_6px_color-mix(in_oklch,var(--t1)_15%,transparent)] dark:bg-foreground/[0.03]"
+              />
+            )}
+          </div>
+          {product.buyerInputHint && <p className="mt-2 text-xs text-muted-foreground">{product.buyerInputHint}</p>}
+        </section>
+      )}
+
+      {/* 邮箱 */}
+      <section>
+        <div className="flex items-center justify-between">
+          <Label htmlFor="email">{t.product.email}</Label>
+          {!product.requireEmail && <span className="text-xs text-muted-foreground">{t.product.emailOptional}</span>}
+        </div>
+        <div className="relative mt-2.5">
+          <input
+            id="email"
+            type="email"
+            inputMode="email"
+            autoComplete="email"
+            required={product.requireEmail}
+            value={email}
+            onChange={(e) => setEmail(e.target.value.trim())}
+            placeholder={t.product.emailPlaceholder}
+            className="h-11 w-full rounded-2xl border border-foreground/10 bg-background/60 px-4 text-[15px] outline-none transition placeholder:text-muted-foreground/70 focus:border-transparent focus:shadow-[0_0_0_1.5px_var(--t1),0_0_0_6px_color-mix(in_oklch,var(--t1)_15%,transparent)] dark:bg-foreground/[0.03]"
+          />
+        </div>
+        <AnimatePresence>
+          {suggestions.length > 0 && (
+            <motion.div initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }} className="mt-2 flex flex-wrap gap-1.5">
+              {suggestions.map((d) => (
+                <button
+                  key={d}
+                  type="button"
+                  onClick={() => setEmail(email.slice(0, email.indexOf("@") + 1) + d)}
+                  className="rounded-full border border-foreground/10 px-2.5 py-1 font-mono text-xs text-muted-foreground transition hover:border-foreground/25 hover:text-foreground"
+                >
+                  @{d}
+                </button>
+              ))}
+            </motion.div>
+          )}
+        </AnimatePresence>
+        <p className="mt-2 text-xs text-muted-foreground">{t.product.emailHint}</p>
+        {product.deliveryHint && (
+          <p className="mt-2 flex items-center gap-1.5 text-xs text-muted-foreground">
+            <Truck className="mt-px size-3.5 shrink-0" />
+            {t.product.delivery}：{product.deliveryHint}
+          </p>
+        )}
+      </section>
+
       {/* 优惠码 */}
       <section>
         <div className="flex items-center justify-between">
@@ -238,7 +311,7 @@ export function CheckoutPanel({
         </div>
         <div
           className={cn(
-            "mt-3 flex h-12 items-center gap-2 rounded-2xl border px-3.5 transition",
+            "mt-2.5 flex h-11 items-center gap-2 rounded-2xl border px-3.5 transition",
             appliedCoupon
               ? "border-emerald-500/25 bg-emerald-500/[0.04]"
               : "border-foreground/10 bg-background/60 focus-within:border-transparent focus-within:shadow-[0_0_0_1.5px_var(--t1),0_0_0_6px_color-mix(in_oklch,var(--t1)_15%,transparent)] dark:bg-foreground/[0.03]",
@@ -288,79 +361,6 @@ export function CheckoutPanel({
         {couponError && <p className="mt-1.5 text-[11px] text-rose-500">{couponError}</p>}
       </section>
 
-      {/* 附加信息 */}
-      {product.buyerInputLabel && (
-        <section>
-          <Label htmlFor={product.buyerInputLength > 0 ? undefined : "buyer-input"}>{product.buyerInputLabel}</Label>
-          <div className="mt-3">
-            {product.buyerInputLength > 0 ? (
-              <SegmentedCodeInput
-                value={buyerInput}
-                onChange={setBuyerInput}
-                length={product.buyerInputLength}
-                ariaLabel={product.buyerInputLabel}
-              />
-            ) : (
-              <input
-                id="buyer-input"
-                type="text"
-                required
-                autoComplete="off"
-                value={buyerInput}
-                onChange={(e) => setBuyerInput(e.target.value)}
-                placeholder={product.buyerInputPlaceholder || `请输入${product.buyerInputLabel}`}
-                className="h-12 w-full rounded-2xl border border-foreground/10 bg-background/60 px-4 text-[15px] outline-none transition placeholder:text-muted-foreground/70 focus:border-transparent focus:shadow-[0_0_0_1.5px_var(--t1),0_0_0_6px_color-mix(in_oklch,var(--t1)_15%,transparent)] dark:bg-foreground/[0.03]"
-              />
-            )}
-          </div>
-          {product.buyerInputHint && <p className="mt-2 text-xs text-muted-foreground">{product.buyerInputHint}</p>}
-        </section>
-      )}
-
-      {/* 邮箱 */}
-      <section>
-        <div className="flex items-center justify-between">
-          <Label htmlFor="email">{t.product.email}</Label>
-          {!product.requireEmail && <span className="text-xs text-muted-foreground">{t.product.emailOptional}</span>}
-        </div>
-        <div className="relative mt-3">
-          <input
-            id="email"
-            type="email"
-            inputMode="email"
-            autoComplete="email"
-            required={product.requireEmail}
-            value={email}
-            onChange={(e) => setEmail(e.target.value.trim())}
-            placeholder={t.product.emailPlaceholder}
-            className="h-12 w-full rounded-2xl border border-foreground/10 bg-background/60 px-4 text-[15px] outline-none transition placeholder:text-muted-foreground/70 focus:border-transparent focus:shadow-[0_0_0_1.5px_var(--t1),0_0_0_6px_color-mix(in_oklch,var(--t1)_15%,transparent)] dark:bg-foreground/[0.03]"
-          />
-        </div>
-        <AnimatePresence>
-          {suggestions.length > 0 && (
-            <motion.div initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }} className="mt-2 flex flex-wrap gap-1.5">
-              {suggestions.map((d) => (
-                <button
-                  key={d}
-                  type="button"
-                  onClick={() => setEmail(email.slice(0, email.indexOf("@") + 1) + d)}
-                  className="rounded-full border border-foreground/10 px-2.5 py-1 font-mono text-xs text-muted-foreground transition hover:border-foreground/25 hover:text-foreground"
-                >
-                  @{d}
-                </button>
-              ))}
-            </motion.div>
-          )}
-        </AnimatePresence>
-        <p className="mt-2 text-xs text-muted-foreground">{t.product.emailHint}</p>
-        {product.deliveryHint && (
-          <p className="mt-2 flex items-center gap-1.5 text-xs text-muted-foreground">
-            <Truck className="mt-px size-3.5 shrink-0" />
-            {t.product.delivery}：{product.deliveryHint}
-          </p>
-        )}
-      </section>
-
       <section id="notice" className="scroll-mt-24 lg:hidden">
         <PurchaseNotice warnings={product.warnings} notes={product.notes} />
       </section>
@@ -386,12 +386,12 @@ export function CheckoutPanel({
           <span className="text-muted-foreground">{t.product.agree}</span>
         </motion.label>
 
-        <div className="mt-4 flex items-center gap-4">
+        <div className="mt-3 flex items-center gap-4">
           <div className="shrink-0">
             <div className="text-xs text-muted-foreground">{t.product.total}</div>
             <div className="flex items-baseline gap-0.5">
               <span className="text-sm">¥</span>
-              <AnimatedPrice cents={total} className="font-mono text-[28px] font-semibold leading-none tabular-nums" />
+              <AnimatedPrice cents={total} className="font-mono text-[26px] font-semibold leading-none tabular-nums" />
             </div>
             {couponSavings > 0 && (
               <div className="mt-1 text-[11px] font-medium text-emerald-600 dark:text-emerald-400">
@@ -402,7 +402,7 @@ export function CheckoutPanel({
           <button
             type="submit"
             disabled={soldOut || submitting}
-            className="group relative flex h-14 flex-1 items-center justify-center gap-2 overflow-hidden rounded-2xl bg-[#1677ff] text-[15px] font-medium text-white shadow-[0_12px_32px_-10px_#1677ff] transition hover:brightness-110 active:scale-[0.985] disabled:cursor-not-allowed disabled:opacity-50"
+            className="group relative flex h-12 flex-1 items-center justify-center gap-2 overflow-hidden rounded-2xl bg-[#1677ff] text-[15px] font-medium text-white shadow-[0_12px_32px_-10px_#1677ff] transition hover:brightness-110 active:scale-[0.985] disabled:cursor-not-allowed disabled:opacity-50"
           >
             <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/25 to-transparent transition-transform duration-1000 group-hover:translate-x-full" />
             {submitting ? (

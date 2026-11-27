@@ -39,6 +39,7 @@ export default async function AdminAgentOrdersPage({
       ? (sp.channel as string)
       : "all";
   const page = Math.max(1, Number(typeof sp.page === "string" ? sp.page : 1) || 1);
+  const fromOrders = sp.from === "orders";
   const list = await listAffiliateOrders({ affiliateId, scope, channel, page });
 
   const href = (next: { scope?: string; channel?: string; page?: number }) => {
@@ -48,6 +49,7 @@ export default async function AdminAgentOrdersPage({
     if (nextScope !== "all") params.set("scope", nextScope);
     if (nextChannel !== "all") params.set("channel", nextChannel);
     if (next.page && next.page > 1) params.set("page", String(next.page));
+    if (fromOrders) params.set("from", "orders");
     const qs = params.toString();
     return `/admin/agents/${affiliateId}/orders${qs ? `?${qs}` : ""}`;
   };
@@ -57,11 +59,11 @@ export default async function AdminAgentOrdersPage({
   return (
     <div className="space-y-4">
       <Link
-        href={`/admin/agents/${affiliateId}`}
+        href={fromOrders ? "/admin/orders" : `/admin/agents/${affiliateId}`}
         className="inline-flex items-center gap-1.5 text-xs text-muted-foreground transition hover:text-foreground"
       >
         <ArrowLeft className="size-3.5" />
-        返回代理详情
+        {fromOrders ? "返回订单列表" : "返回代理详情"}
       </Link>
 
       <section className="flex flex-wrap items-start justify-between gap-4 rounded-2xl border border-foreground/[0.07] bg-background/70 p-5">
@@ -215,7 +217,7 @@ export default async function AdminAgentOrdersPage({
             page={list.page}
             total={list.total}
             pageSize={list.pageSize}
-            query={{ scope: scope === "all" ? undefined : scope, channel: channel === "all" ? undefined : channel }}
+            query={{ scope: scope === "all" ? undefined : scope, channel: channel === "all" ? undefined : channel, from: fromOrders ? "orders" : undefined }}
             className="pt-3"
           />
         </div>
